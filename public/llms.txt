@@ -1,0 +1,23 @@
+# PrismPrep
+
+> PrismPrep is a free, no-account GRE prep tool that splits the GRE General Test into three focused practice paths — Verbal Reasoning, Quantitative Reasoning, and Analytical Writing — with 300 timed practice questions and instant scoring. It runs entirely in the browser.
+
+Key facts:
+
+- Price: Free. No account, no paywall, no trial.
+- Coverage: All three GRE sections — Verbal Reasoning, Quantitative Reasoning, Analytical Writing.
+- Question bank: 300 practice questions (100 per section) across 18 timed practice tests.
+- Verbal question types: reading comprehension, text completion, sentence equivalence.
+- Quantitative topics: arithmetic, algebra, geometry, data analysis.
+- Analytical Writing: Issue and Argument essay prompts with rubric-style guidance.
+- Scoring: instant for Verbal and Quantitative; rubric guidance for Writing.
+- Affiliation: independent; not affiliated with or endorsed by ETS or the official GRE.
+
+## Pages
+
+- [Home](https://prismprep.com/): Overview, what's covered, and FAQ.
+- [Practice Test Gallery](https://prismprep.com/practice): Browse all 18 timed practice tests by section.
+
+## More
+
+- [Sitemap](https://prismprep.com/sitemap.xml)

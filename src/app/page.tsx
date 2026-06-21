@@ -3,15 +3,19 @@ import HomeHero from "@/components/home/HomeHero";
 import SectionOverviewCard from "@/components/sections/SectionOverviewCard";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
+import JsonLd from "@/components/seo/JsonLd";
 import { getQuestionCountBySection } from "@/lib/questions";
 import { sections } from "@/lib/sections";
 import { getTotalQuestionCount } from "@/lib/tests";
+import { faqs } from "@/lib/faq";
+import { faqSchema } from "@/lib/structured-data";
 
 export default function HomePage() {
   const totalQuestions = getTotalQuestionCount();
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16 flex flex-col gap-20">
+      <JsonLd data={faqSchema()} />
       <HomeHero
         headline={
           <>
@@ -63,6 +67,22 @@ export default function HomePage() {
             </span>
           </Card>
         ))}
+      </section>
+
+      <section className="flex flex-col gap-6">
+        <h2 style={{ color: "var(--ink)" }}>Frequently Asked Questions</h2>
+        <div className="flex flex-col gap-4">
+          {faqs.map((faq) => (
+            <Card key={faq.question} className="flex flex-col gap-2">
+              <h3 className="text-lg font-semibold" style={{ color: "var(--ink)" }}>
+                {faq.question}
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                {faq.answer}
+              </p>
+            </Card>
+          ))}
+        </div>
       </section>
     </div>
   );

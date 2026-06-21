@@ -4,8 +4,19 @@ import RootLayout, { metadata } from "@/app/layout";
 
 describe("Root layout smoke", () => {
   it("exports page metadata", () => {
-    expect(metadata.title).toBe("PrismPrep — Focused GRE Practice");
+    // title is a default/template object so child routes inherit "%s — PrismPrep".
+    expect(metadata.title).toMatchObject({
+      default: expect.stringContaining("PrismPrep"),
+      template: expect.stringContaining("PrismPrep"),
+    });
     expect(metadata.description).toMatch(/GRE prep/i);
+  });
+
+  it("exposes SEO and social metadata", () => {
+    expect(metadata.metadataBase?.toString()).toBe("https://prismprep.com/");
+    expect(metadata.alternates?.canonical).toBe("/");
+    expect(metadata.openGraph?.title).toMatch(/PrismPrep/);
+    expect(metadata.twitter?.card).toBe("summary_large_image");
   });
 
   it("renders shared header and page children inside main", () => {
