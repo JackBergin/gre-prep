@@ -3,22 +3,29 @@ interface LogoProps {
   size?: number;
 }
 
-const SPOKE_COUNT = 8;
-const RADIUS = 12;
+const SPOKE_COUNT = 10;
+const RADIUS = 11;
 /** In the `rotate(a) translate(0,-R)` convention, angle 180° sits at the bottom. */
 const BOTTOM_ANGLE = 180;
-const SURVIVOR_INDEX = BOTTOM_ANGLE / (360 / SPOKE_COUNT); // 4
+const SURVIVOR_INDEX = BOTTOM_ANGLE / (360 / SPOKE_COUNT); // 5
 
-/** Small checkmark blade, centred on the origin so it can be placed on the rim. */
-const SPOKE_CHECK_PATH = "M -2.6 0.3 L -0.9 2.1 L 2.9 -2.3";
-/** Large checkmark, centred on the origin — the resolved icon. */
-const CENTER_CHECK_PATH = "M -8.5 0.5 L -2 7.6 L 9.6 -6.6";
+/**
+ * Checkmark whose corner (vertex) points radially outward (local -y) with both
+ * tips reaching inward toward the centre — so vertices trace the outer circle
+ * and the tops converge at the middle.
+ */
+const CHECK_PATH = "M -2.6 -0.05 L -0.8 -1.95 L 2.6 1.95";
 
-/** Loop timing, as percentages of the 5s cycle. */
-const HOLD_START = 6;
-const STEP = 6;
-const WINDOW = 12;
-const EASE = "cubic-bezier(0.5, 0, 0.5, 1)";
+/**
+ * Loop timing as percentages of the 5s cycle. The assembled ring is the resting
+ * state, so it holds for the first ~42% before the checks merge counter-clockwise
+ * into the bottom check, which then swells, settles, and the ring regenerates.
+ */
+const HOLD = 42;
+const STEP = 2.5;
+const WINDOW = 10;
+const REGEN_START = 86;
+const REGEN_END = 98;
 
 interface Spoke {
   index: number;
@@ -36,49 +43,45 @@ function homeTransform(angle: number, scale = 1): string {
   return `rotate(${angle}deg) translate(0, -${RADIUS}px) scale(${scale})`;
 }
 
-/** Clockwise (increasing-angle) sweep needed to reach the bottom collection point. */
-function clockwiseToBottom(angle: number): number {
-  return ((BOTTOM_ANGLE - angle) % 360 + 360) % 360;
+/** Counter-clockwise (decreasing-angle) sweep needed to reach the bottom check. */
+function counterClockwiseToBottom(angle: number): number {
+  return ((angle - BOTTOM_ANGLE) % 360 + 360) % 360;
 }
 
-/** Merge sequence index: a wave that starts just past the bottom and travels clockwise. */
-function mergeOrder(index: number): number {
-  return ((index - (SURVIVOR_INDEX + 1)) % SPOKE_COUNT + SPOKE_COUNT) % SPOKE_COUNT;
-}
+// Merge order: the spokes furthest (CCW) from the bottom launch first so the
+// wave gathers into the bottom check, with the nearest clicking in last.
+const MERGE_ORDER = new Map(
+  SPOKES.filter((s) => s.index !== SURVIVOR_INDEX)
+    .sort((a, b) => counterClockwiseToBottom(b.angle) - counterClockwiseToBottom(a.angle))
+    .map((s, order) => [s.index, order] as const)
+);
 
 function spokeKeyframes(spoke: Spoke): string {
+  const home = homeTransform(spoke.angle);
+
   if (spoke.index === SURVIVOR_INDEX) {
-    // The lone survivor lingers at the bottom, then hands off to the big check.
-    const home = homeTransform(spoke.angle);
+    // The bottom check survives, swells into the icon, then settles back.
     return `@keyframes ${spoke.keyframeName} {
-  0%, 56% { transform: ${home}; opacity: 0.9; }
-  64% { transform: ${homeTransform(spoke.angle, 0.3)}; opacity: 0; }
-  96% { transform: ${home}; opacity: 0; }
-  100% { transform: ${home}; opacity: 0.9; }
+  0%, 70% { transform: ${home}; }
+  80%, 88% { transform: ${homeTransform(spoke.angle, 1.4)}; }
+  96%, 100% { transform: ${home}; }
 }`;
   }
 
-  const start = HOLD_START + mergeOrder(spoke.index) * STEP;
+  const order = MERGE_ORDER.get(spoke.index) ?? 0;
+  const start = HOLD + order * STEP;
   const end = start + WINDOW;
-  const home = homeTransform(spoke.angle);
-  const merged = `rotate(${spoke.angle + clockwiseToBottom(spoke.angle)}deg) translate(0, -${RADIUS}px) scale(0.12)`;
+  const merged = `rotate(${spoke.angle - counterClockwiseToBottom(spoke.angle)}deg) translate(0, -${RADIUS}px) scale(0.12)`;
 
   return `@keyframes ${spoke.keyframeName} {
   0%, ${start}% { transform: ${home}; opacity: 0.9; }
   ${end}% { transform: ${merged}; opacity: 0; }
-  96% { transform: ${home}; opacity: 0; }
-  100% { transform: ${home}; opacity: 0.9; }
+  ${REGEN_START}% { transform: ${homeTransform(spoke.angle, 0.2)}; opacity: 0; }
+  ${REGEN_END}%, 100% { transform: ${home}; opacity: 0.9; }
 }`;
 }
 
-const CENTER_KEYFRAMES = `@keyframes pp-center {
-  0%, 52% { opacity: 0; transform: scale(0.25); }
-  70%, 86% { opacity: 1; transform: scale(1); }
-  95% { opacity: 0; transform: scale(1.12); }
-  100% { opacity: 0; transform: scale(0.25); }
-}`;
-
-const LOGO_KEYFRAMES = [...SPOKES.map(spokeKeyframes), CENTER_KEYFRAMES].join("\n");
+const LOGO_KEYFRAMES = SPOKES.map(spokeKeyframes).join("\n");
 
 export default function Logo({ className = "", size = 40 }: LogoProps) {
   return (
@@ -92,17 +95,20 @@ export default function Logo({ className = "", size = 40 }: LogoProps) {
       aria-hidden="true"
     >
       <style>{LOGO_KEYFRAMES}</style>
-      <g className="logo-spokes">
-        {SPOKES.map((spoke) => (
+      {SPOKES.map((spoke) => {
+        const isSurvivor = spoke.index === SURVIVOR_INDEX;
+        return (
           <path
             key={spoke.index}
-            className="logo-check logo-spoke"
-            style={{ animationName: spoke.keyframeName }}
-            d={SPOKE_CHECK_PATH}
+            className={`logo-check logo-spoke${isSurvivor ? " logo-survivor" : ""}`}
+            style={{
+              transform: homeTransform(spoke.angle),
+              animationName: spoke.keyframeName,
+            }}
+            d={CHECK_PATH}
           />
-        ))}
-      </g>
-      <path className="logo-check logo-check--center logo-center" d={CENTER_CHECK_PATH} />
+        );
+      })}
     </svg>
   );
 }

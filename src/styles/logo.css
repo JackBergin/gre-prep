@@ -1,47 +1,40 @@
 .logo {
   display: block;
   flex-shrink: 0;
-  overflow: visible;
+  /* Clip to the icon box so the merging checks never spill into the header. */
+  overflow: hidden;
   color: inherit;
 }
 
 .logo-check {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.7;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.logo-check--center {
-  stroke-width: 2.6;
-}
-
-/* Spokes pivot about the wheel centre; the centred viewBox puts that at 50% 50%. */
+/*
+ * Each check pivots about its own centre. Because every check path is authored
+ * centred on the origin (the SVG centre in the -20..20 viewBox), fill-box +
+ * centre keeps rotations/scales pinned to the wheel centre in every browser.
+ */
 .logo-spoke {
-  transform-box: view-box;
-  transform-origin: 50% 50%;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0.9;
   animation-duration: 5s;
   animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
   animation-iteration-count: infinite;
 }
 
-/* The resolved checkmark grows up from the bottom collection point (50% 80%). */
-.logo-center {
-  transform-box: view-box;
-  transform-origin: 50% 80%;
-  opacity: 0;
-  animation: pp-center 5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+.logo-survivor {
+  opacity: 1;
+  stroke-width: 2.6;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logo-spokes {
-    display: none;
-  }
-
-  .logo-center {
+  .logo-spoke {
     animation: none;
-    opacity: 1;
-    transform: none;
   }
 }
