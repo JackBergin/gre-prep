@@ -4,10 +4,6 @@ import { readArtTheme } from "@/lib/art/theme";
 export interface SlimeMoldOptions {
   agentCount: number;
   speed: number;
-  sensorAngle: number;
-  sensorDist: number;
-  turnSpeed: number;
-  trailDecay: number;
   getSize: () => { width: number; height: number };
 }
 
@@ -15,6 +11,20 @@ interface Agent {
   x: number;
   y: number;
   heading: number;
+  sensorAngle: number;
+  sensorDist: number;
+  rotAngle: number;
+}
+
+function parseBg(bg: string): [number, number, number] {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 1;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return [224, 229, 236];
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1, 1);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  return [r, g, b];
 }
 
 export function createSlimeMoldSketch(
@@ -22,10 +32,8 @@ export function createSlimeMoldSketch(
 ): (p: p5) => void {
   let agents: Agent[] = [];
   let theme = readArtTheme();
-  let trail: Float32Array;
-  let tw = 0;
-  let th = 0;
   let d = 1;
+  let bgRgb: [number, number, number] = [224, 229, 236];
 
   return (p: p5) => {
     p.setup = () => {
@@ -38,151 +46,96 @@ export function createSlimeMoldSketch(
 
     function initScene() {
       theme = readArtTheme();
-      tw = p.width;
-      th = p.height;
-      trail = new Float32Array(tw * th);
+      bgRgb = parseBg(theme.bg);
+      p.background(bgRgb[0], bgRgb[1], bgRgb[2]);
 
-      const cx = tw * 0.5;
-      const cy = th * 0.5;
-      const spawnRadius = Math.min(tw, th) * 0.3;
+      const cx = p.width * 0.5;
+      const cy = p.height * 0.5;
 
       agents = [];
       for (let i = 0; i < options.agentCount; i++) {
-        const angle = p.random(0, 360);
-        const r = p.random(0, spawnRadius);
         agents.push({
-          x: cx + p.cos(angle) * r,
-          y: cy + p.sin(angle) * r,
-          heading: p.random(0, 360),
+          x: p.random(cx - 20, cx + 20),
+          y: p.random(cy - 20, cy + 20),
+          heading: p.random(360),
+          sensorAngle: 45,
+          sensorDist: 10,
+          rotAngle: 45,
         });
       }
     }
 
     p.draw = () => {
       theme = readArtTheme();
+      bgRgb = parseBg(theme.bg);
+      const [br, bg, bb] = bgRgb;
       const [vr, vg, vb] = theme.rayVerbalRgb;
       const [qr, qg, qb] = theme.rayQuantRgb;
       const [wr, wg, wb] = theme.rayWritingRgb;
 
-      // Sense-rotate-move for each agent
-      for (const agent of agents) {
-        const fSense = sampleTrail(
-          agent.x,
-          agent.y,
-          agent.heading,
-          options.sensorDist
-        );
-        const lSense = sampleTrail(
-          agent.x,
-          agent.y,
-          agent.heading - options.sensorAngle,
-          options.sensorDist
-        );
-        const rSense = sampleTrail(
-          agent.x,
-          agent.y,
-          agent.heading + options.sensorAngle,
-          options.sensorDist
-        );
-
-        if (fSense > lSense && fSense > rSense) {
-          // keep heading
-        } else if (fSense < lSense && fSense < rSense) {
-          agent.heading += p.random() < 0.5
-            ? options.turnSpeed
-            : -options.turnSpeed;
-        } else if (lSense > rSense) {
-          agent.heading -= options.turnSpeed;
-        } else if (rSense > lSense) {
-          agent.heading += options.turnSpeed;
-        }
-
-        agent.x =
-          (agent.x + p.cos(agent.heading) * options.speed + tw) % tw;
-        agent.y =
-          (agent.y + p.sin(agent.heading) * options.speed + th) % th;
-
-        // Deposit trail
-        const tx = Math.floor(agent.x);
-        const ty = Math.floor(agent.y);
-        if (tx >= 0 && tx < tw && ty >= 0 && ty < th) {
-          trail[ty * tw + tx] = Math.min(trail[ty * tw + tx] + 0.04, 1);
-        }
-      }
-
-      // Diffuse & decay trail — tight cross kernel keeps lines thin
-      const next = new Float32Array(tw * th);
-      for (let y = 1; y < th - 1; y++) {
-        for (let x = 1; x < tw - 1; x++) {
-          const center = trail[y * tw + x];
-          const sum =
-            center * 4 +
-            trail[(y - 1) * tw + x] +
-            trail[(y + 1) * tw + x] +
-            trail[y * tw + (x - 1)] +
-            trail[y * tw + (x + 1)];
-          next[y * tw + x] = (sum / 8) * options.trailDecay;
-        }
-      }
-      trail = next;
-
-      // Render to pixels
+      // Fading background — produces thin persistent trails
+      p.background(br, bg, bb, 12);
       p.loadPixels();
-      const pw = d * tw;
-      for (let y = 0; y < th; y++) {
-        for (let x = 0; x < tw; x++) {
-          const v = trail[y * tw + x];
-          if (v < 0.015) continue;
 
-          // Color shifts across the canvas using 3 ray colors
-          const t = x / tw;
-          let cr: number, cg: number, cb: number;
-          if (t < 0.5) {
-            const mix = t * 2;
-            cr = vr + (qr - vr) * mix;
-            cg = vg + (qg - vg) * mix;
-            cb = vb + (qb - vb) * mix;
-          } else {
-            const mix = (t - 0.5) * 2;
-            cr = qr + (wr - qr) * mix;
-            cg = qg + (wg - qg) * mix;
-            cb = qb + (wb - qb) * mix;
-          }
+      const pw = d * p.width;
 
-          const alpha = v * theme.particleAlpha * 255 * 2.5;
+      for (const agent of agents) {
+        // Move
+        agent.x = (agent.x + p.cos(agent.heading) * options.speed + p.width) % p.width;
+        agent.y = (agent.y + p.sin(agent.heading) * options.speed + p.height) % p.height;
 
-          for (let dy = 0; dy < d; dy++) {
-            for (let dx = 0; dx < d; dx++) {
-              const idx =
-                4 * ((y * d + dy) * pw + (x * d + dx));
-              // Alpha-blend over existing pixel
-              const a = alpha / 255;
-              p.pixels[idx] = p.pixels[idx] * (1 - a) + cr * a;
-              p.pixels[idx + 1] = p.pixels[idx + 1] * (1 - a) + cg * a;
-              p.pixels[idx + 2] = p.pixels[idx + 2] * (1 - a) + cb * a;
-              p.pixels[idx + 3] = Math.min(
-                255,
-                p.pixels[idx + 3] + alpha
-              );
-            }
-          }
+        // Sense pixel brightness in 3 directions
+        const f = senseAt(agent.x, agent.y, agent.heading, agent.sensorDist, pw);
+        const l = senseAt(agent.x, agent.y, agent.heading - agent.sensorAngle, agent.sensorDist, pw);
+        const r = senseAt(agent.x, agent.y, agent.heading + agent.sensorAngle, agent.sensorDist, pw);
+
+        // Steer toward brighter trails
+        if (f > l && f > r) {
+          // keep heading
+        } else if (f < l && f < r) {
+          agent.heading += p.random() < 0.5 ? agent.rotAngle : -agent.rotAngle;
+        } else if (l > r) {
+          agent.heading -= agent.rotAngle;
+        } else if (r > l) {
+          agent.heading += agent.rotAngle;
         }
+
+        // Color based on horizontal position — verbal → quant → writing
+        const t = agent.x / p.width;
+        let cr: number, cg: number, cb: number;
+        if (t < 0.5) {
+          const m = t * 2;
+          cr = vr + (qr - vr) * m;
+          cg = vg + (qg - vg) * m;
+          cb = vb + (qb - vb) * m;
+        } else {
+          const m = (t - 0.5) * 2;
+          cr = qr + (wr - qr) * m;
+          cg = qg + (wg - qg) * m;
+          cb = qb + (wb - qb) * m;
+        }
+
+        p.noStroke();
+        p.fill(cr, cg, cb, theme.particleAlpha * 255);
+        p.ellipse(agent.x, agent.y, 1, 1);
       }
-      p.updatePixels();
     };
 
-    function sampleTrail(
+    function senseAt(
       x: number,
       y: number,
       angle: number,
-      dist: number
+      dist: number,
+      pw: number
     ): number {
-      const sx = Math.floor((x + p.cos(angle) * dist + tw) % tw);
-      const sy = Math.floor((y + p.sin(angle) * dist + th) % th);
-      if (sx >= 0 && sx < tw && sy >= 0 && sy < th) {
-        return trail[sy * tw + sx];
-      }
-      return 0;
+      const sx = Math.floor((x + p.cos(angle) * dist + p.width) % p.width);
+      const sy = Math.floor((y + p.sin(angle) * dist + p.height) % p.height);
+      const idx = 4 * (d * sy) * pw + 4 * (d * sx);
+      // Measure color distance from background — agents follow trails
+      const dr = (p.pixels[idx] ?? bgRgb[0]) - bgRgb[0];
+      const dg = (p.pixels[idx + 1] ?? bgRgb[1]) - bgRgb[1];
+      const db = (p.pixels[idx + 2] ?? bgRgb[2]) - bgRgb[2];
+      return Math.abs(dr) + Math.abs(dg) + Math.abs(db);
     }
 
     p.windowResized = () => {

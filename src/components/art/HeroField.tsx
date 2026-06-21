@@ -13,9 +13,6 @@ import {
 } from "@/lib/art/motion";
 
 export default function HeroField() {
-  // Initialise with SSR-safe defaults so the first client render matches the
-  // server, then read the real environment after mount to avoid hydration drift.
-  const [mounted, setMounted] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [visible, setVisible] = useState(true);
   const [mobile, setMobile] = useState(false);
@@ -23,7 +20,6 @@ export default function HeroField() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMounted(true);
     setReducedMotion(prefersReducedMotion());
     setMobile(isMobileViewport());
 
@@ -51,10 +47,6 @@ export default function HeroField() {
     return createSlimeMoldSketch({
       agentCount: config.slimeMoldAgents,
       speed: config.slimeMoldSpeed,
-      sensorAngle: 45,
-      sensorDist: 18,
-      turnSpeed: 22,
-      trailDecay: config.slimeMoldTrailDecay,
       getSize: () => ({
         width: containerRef.current?.clientWidth ?? 640,
         height: containerRef.current?.clientHeight ?? 220,
@@ -67,12 +59,8 @@ export default function HeroField() {
   }
 
   return (
-    <div ref={containerRef} className="hero-field hero-field--prism" key={themeKey}>
-      <ArtCanvas
-        sketchFactory={slimeMoldFactory}
-        className="art-canvas hero-field--slime"
-        paused={!visible}
-      />
+    <div ref={containerRef} className="hero-field" key={themeKey}>
+      <ArtCanvas sketchFactory={slimeMoldFactory} paused={!visible} />
     </div>
   );
 }

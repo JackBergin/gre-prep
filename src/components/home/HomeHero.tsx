@@ -11,9 +11,9 @@ export default function HomeHero({ headline, children }: HomeHeroProps) {
   return (
     <section className="hero-section">
       <div className="hero-section__content">
-        <div className="glass-panel flex flex-col items-center text-center gap-6 p-8 md:p-10">
+        <div className="glass-panel flex flex-col items-center text-center gap-6 p-8 md:p-10" style={{ overflow: "hidden" }}>
+          <HeroField />
           <div className="hero-section__headline-wrap">
-            <HeroField />
             <div className="hero-section__headline">{headline}</div>
           </div>
           {children}

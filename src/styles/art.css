@@ -17,19 +17,9 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: var(--art-opacity);
-  mix-blend-mode: var(--art-blend-mode, normal);
   pointer-events: none;
-}
-
-.hero-field--prism {
-  opacity: var(--art-opacity);
-}
-
-.hero-field--slime {
-  opacity: 0.35;
-  mix-blend-mode: screen;
-  z-index: -1;
+  border-radius: inherit;
+  overflow: hidden;
 }
 
 .hero-field--static {

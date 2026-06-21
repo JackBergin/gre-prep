@@ -12,7 +12,6 @@ const BALANCED = {
   maxDpr: 2,
   slimeMoldAgents: { desktop: 3000, mobile: 1200 },
   slimeMoldSpeed: 1.0,
-  slimeMoldTrailDecay: 0.96,
 };
 
 const INTENSITY_MAP = {
@@ -26,7 +25,6 @@ const INTENSITY_MAP = {
     maxDpr: 1.5,
     slimeMoldAgents: { desktop: 2000, mobile: 800 },
     slimeMoldSpeed: 0.8,
-    slimeMoldTrailDecay: 0.94,
   },
   balanced: BALANCED,
   vivid: {
@@ -39,7 +37,6 @@ const INTENSITY_MAP = {
     maxDpr: 2,
     slimeMoldAgents: { desktop: 5000, mobile: 2000 },
     slimeMoldSpeed: 1.2,
-    slimeMoldTrailDecay: 0.97,
   },
 } as const;
 
@@ -55,6 +52,5 @@ export function getArtConfig(isMobile: boolean) {
     maxDpr: cfg.maxDpr,
     slimeMoldAgents: isMobile ? cfg.slimeMoldAgents.mobile : cfg.slimeMoldAgents.desktop,
     slimeMoldSpeed: cfg.slimeMoldSpeed,
-    slimeMoldTrailDecay: cfg.slimeMoldTrailDecay,
   };
 }
