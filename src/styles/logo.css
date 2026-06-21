@@ -1,5 +1,28 @@
 .logo {
   display: block;
   flex-shrink: 0;
-  border-radius: 7px;
+  --logo-color: #424858;
+}
+
+[data-theme="dark"] .logo {
+  --logo-color: #ffffff;
+}
+
+.logo__box,
+.logo__triangle {
+  stroke: var(--logo-color);
+  fill: none;
+}
+
+.logo__box {
+  stroke-width: 2;
+}
+
+.logo__triangle {
+  stroke-width: 2;
+}
+
+.logo__dot {
+  fill: var(--logo-color);
+  stroke: none;
 }

@@ -11,7 +11,9 @@
     "test:unit": "vitest run tests/unit",
     "test:smoke": "vitest run tests/smoke",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "icons:sync": "node scripts/sync-icons.mjs",
+    "icons:build": "node scripts/sync-icons.mjs && node scripts/build-favicon.mjs"
   },
   "dependencies": {
     "next": "16.2.9",

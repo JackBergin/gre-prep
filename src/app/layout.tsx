@@ -6,6 +6,7 @@ import "../styles/glass.css";
 import "../styles/logo.css";
 import Header from "@/components/layout/Header";
 import JsonLd from "@/components/seo/JsonLd";
+import { brand } from "@/lib/brand";
 import { site } from "@/lib/site";
 import {
   organizationSchema,
@@ -27,6 +28,48 @@ export const metadata: Metadata = {
   category: "education",
   alternates: {
     canonical: "/",
+  },
+  icons: {
+    icon: [
+      {
+        url: "/icon-light.svg",
+        type: "image/svg+xml",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/icon-dark.svg",
+        type: "image/svg+xml",
+        media: "(prefers-color-scheme: dark)",
+      },
+      {
+        url: "/icon-light.png",
+        type: "image/png",
+        sizes: "32x32",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/icon-dark.png",
+        type: "image/png",
+        sizes: "32x32",
+        media: "(prefers-color-scheme: dark)",
+      },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      {
+        url: "/apple-icon-light.png",
+        sizes: "180x180",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/apple-icon-dark.png",
+        sizes: "180x180",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
   },
   openGraph: {
     type: "website",
@@ -59,9 +102,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#E0E5EC" },
-    { media: "(prefers-color-scheme: dark)", color: "#1A1D24" },
+    { media: "(prefers-color-scheme: light)", color: brand.bgLight },
+    { media: "(prefers-color-scheme: dark)", color: brand.bgDark },
   ],
 };
 
