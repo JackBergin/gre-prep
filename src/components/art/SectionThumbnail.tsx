@@ -27,12 +27,17 @@ const sectionSketchFactory = {
 } as const;
 
 export default function SectionThumbnail({ section }: SectionThumbnailProps) {
-  const [reducedMotion, setReducedMotion] = useState(() => prefersReducedMotion());
+  // SSR-safe defaults so the first client render matches the server; read real
+  // environment after mount to avoid hydration drift.
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [visible, setVisible] = useState(true);
-  const [mobile, setMobile] = useState(() => isMobileViewport());
+  const [mobile, setMobile] = useState(false);
   const [themeKey, setThemeKey] = useState(0);
 
   useEffect(() => {
+    setReducedMotion(prefersReducedMotion());
+    setMobile(isMobileViewport());
+
     const cleanups = [
       subscribeReducedMotion(setReducedMotion),
       subscribeVisibility(setVisible),
