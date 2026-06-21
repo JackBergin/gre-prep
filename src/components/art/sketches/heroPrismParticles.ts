@@ -64,7 +64,9 @@ export function createHeroPrismParticlesSketch(
 
     p.draw = () => {
       theme = readArtTheme();
-      p.background(p.color(theme.bg));
+      // Transparent canvas so the field composites over the glass panel rather
+      // than painting an opaque page-coloured rectangle behind the headline.
+      p.clear();
 
       const mouse = options.getMouseNorm();
       const parallaxX = options.interactive
@@ -90,8 +92,11 @@ export function createHeroPrismParticlesSketch(
 
       for (const pt of particles) {
         const waveDrift = p.sin(p.frameCount * 0.018 + pt.hueOffset * p.TWO_PI) * 6;
+        // Travelling vertical undulation that lives while in the wave state and
+        // settles to zero as the field consolidates into the prism (1 - morph).
+        const waveBob = p.sin(p.frameCount * 0.022 + pt.waveX * 0.035) * 12 * (1 - morph);
         const wx = pt.waveX + waveDrift + parallaxX * (0.35 + pt.hueOffset * 0.25);
-        const wy = pt.waveY + parallaxY * 0.4;
+        const wy = pt.waveY + waveBob + parallaxY * 0.4;
 
         const px = pt.prismX + parallaxX * 0.15;
         const py = pt.prismY + parallaxY * 0.15 + attract * 8;

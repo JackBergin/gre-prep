@@ -13,14 +13,21 @@ import {
 } from "@/lib/art/motion";
 
 export default function HeroField() {
-  const [reducedMotion, setReducedMotion] = useState(() => prefersReducedMotion());
+  // Initialise with SSR-safe defaults so the first client render matches the
+  // server, then read the real environment after mount to avoid hydration drift.
+  const [mounted, setMounted] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [visible, setVisible] = useState(true);
-  const [mobile, setMobile] = useState(() => isMobileViewport());
+  const [mobile, setMobile] = useState(false);
   const [themeKey, setThemeKey] = useState(0);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setMounted(true);
+    setReducedMotion(prefersReducedMotion());
+    setMobile(isMobileViewport());
+
     const cleanups = [
       subscribeReducedMotion(setReducedMotion),
       subscribeVisibility(setVisible),

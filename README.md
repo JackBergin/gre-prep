@@ -16,6 +16,20 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Testing
+
+Vitest + React Testing Library live under `tests/`:
+
+- `tests/unit` — components and `src/lib` utilities
+- `tests/smoke` — page renders and App Router API route handlers
+
+```bash
+npm test              # full suite
+npm run test:unit     # unit tests only
+npm run test:smoke    # smoke/integration tests only
+npm run test:watch    # watch mode
+```
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
