@@ -1,24 +1,11 @@
 import Link from "next/link";
 import HomeHero from "@/components/home/HomeHero";
-import SectionThumbnail from "@/components/art/SectionThumbnail";
-import GlassCard from "@/components/ui/GlassCard";
+import SectionOverviewCard from "@/components/sections/SectionOverviewCard";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import { getQuestionCountBySection } from "@/lib/questions";
-import { getTotalQuestionCount, sectionMeta } from "@/lib/tests";
-
-const sections = (["verbal", "quantitative", "writing"] as const).map((key) => ({
-  key,
-  ...sectionMeta[key],
-  questions: getQuestionCountBySection(key) as number,
-  time: key === "writing" ? "60 min" : "20 min",
-}));
-
-const sectionRayVar = {
-  verbal: "var(--prism-ray-verbal)",
-  quantitative: "var(--prism-ray-quant)",
-  writing: "var(--prism-ray-writing)",
-} as const;
+import { sections } from "@/lib/sections";
+import { getTotalQuestionCount } from "@/lib/tests";
 
 export default function HomePage() {
   const totalQuestions = getTotalQuestionCount();
@@ -32,7 +19,7 @@ export default function HomePage() {
             <h1 style={{ color: "var(--ink)" }}>
               Clarity from
               <br />
-              <span style={{ color: "white" }}>Complexity.</span>
+              <span style={{ color: "var(--ink)" }}>Complexity.</span>
             </h1>
           </>
         }
@@ -49,31 +36,14 @@ export default function HomePage() {
       <section className="flex flex-col gap-6">
         <h2 style={{ color: "var(--ink)" }}>What&apos;s Covered</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {sections.map((s) => (
-            <GlassCard
-              key={s.key}
-              className="flex flex-col gap-4 p-6"
-              style={{ "--section-ray": sectionRayVar[s.key] } as React.CSSProperties}
-            >
-              <SectionThumbnail section={s.key} />
-              <div>
-                <h3 style={{ color: "var(--ink)" }}>{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                  {s.description}
-                </p>
-              </div>
-              <div className="flex gap-2 flex-wrap mt-auto">
-                <Chip as="span">{s.questions} Questions</Chip>
-                <Chip as="span">{s.time}</Chip>
-              </div>
-              <Link
-                href={`/practice#${s.key}`}
-                className="btn btn--ghost"
-                style={{ justifyContent: "center" }}
-              >
-                View Tests →
-              </Link>
-            </GlassCard>
+          {sections.map((key) => (
+            <SectionOverviewCard
+              key={key}
+              section={key}
+              questionCount={getQuestionCountBySection(key) as number}
+              time={key === "writing" ? "60 min" : "20 min"}
+              href={`/practice#${key}`}
+            />
           ))}
         </div>
       </section>

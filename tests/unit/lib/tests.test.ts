@@ -40,7 +40,7 @@ describe("tests lib", () => {
 
   it("exposes section metadata and total bank size", () => {
     expect(sectionMeta.verbal.title).toBe("Verbal Reasoning");
-    expect(sectionMeta.quantitative.icon).toBe("∑");
+    expect(sectionMeta.quantitative.description).toContain("algebra");
     expect(getTotalQuestionCount()).toBeGreaterThan(0);
     expect(tests.length).toBeGreaterThan(10);
   });

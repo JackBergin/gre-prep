@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
+import SectionHeader from "@/components/sections/SectionHeader";
 import { Section, TestDefinition } from "@/lib/types";
-import { formatTime, getTotalQuestionCount, sectionMeta } from "@/lib/tests";
+import { sections } from "@/lib/sections";
+import { formatTime, getTotalQuestionCount } from "@/lib/tests";
 import { getQuestionCountBySection } from "@/lib/questions";
-
-const sections: Section[] = ["verbal", "quantitative", "writing"];
 
 export default function PracticePage() {
   const [testsBySection, setTestsBySection] = useState<Record<Section, TestDefinition[]>>({
@@ -58,28 +58,15 @@ export default function PracticePage() {
       ) : (
         <div className="flex flex-col gap-10">
           {sections.map((section) => {
-            const meta = sectionMeta[section];
             const sectionCount =
               typeof counts === "object" ? counts[section] : counts;
             const sectionTests = testsBySection[section];
 
             return (
               <section key={section} id={section} className="flex flex-col gap-5">
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-2xl text-xl font-bold text-white"
-                    style={{ background: "var(--accent)", boxShadow: "var(--raise)" }}
-                  >
-                    {meta.icon}
-                  </div>
-                  <div className="flex-1">
-                    <h2 style={{ color: "var(--ink)" }}>{meta.title}</h2>
-                    <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>
-                      {meta.description}
-                    </p>
-                  </div>
+                <SectionHeader section={section}>
                   <Chip as="span">{sectionCount} in bank</Chip>
-                </div>
+                </SectionHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {sectionTests.map((test) => (

@@ -69,6 +69,7 @@ export default function HeroField() {
     return createHeroPrismParticlesSketch({
       particleCount: config.heroParticleCount,
       speed: config.heroSpeed,
+      connectionDist: config.heroConnectionDist,
       parallaxStrength: config.heroParallax,
       interactive: !mobile,
       getMouseNorm: () => mouseRef.current,

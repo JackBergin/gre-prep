@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { sectionRayVar } from "@/lib/sections";
 import type { Section } from "@/lib/types";
 import ArtCanvas from "./ArtCanvas";
 import { createQuantSketch } from "./sketches/quantSketch";
@@ -18,12 +19,6 @@ import {
 interface SectionThumbnailProps {
   section: Section;
 }
-
-const sectionRayVar: Record<Section, string> = {
-  verbal: "var(--prism-ray-verbal)",
-  quantitative: "var(--prism-ray-quant)",
-  writing: "var(--prism-ray-writing)",
-};
 
 const sectionSketchFactory = {
   verbal: createVerbalSketch,

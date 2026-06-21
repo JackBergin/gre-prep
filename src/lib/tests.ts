@@ -203,24 +203,18 @@ export function getTotalQuestionCount(): number {
   return verbalQuestions.length + quantitativeQuestions.length + writingQuestions.length;
 }
 
-export const sectionMeta: Record<
-  Section,
-  { title: string; description: string; icon: string }
-> = {
+export const sectionMeta: Record<Section, { title: string; description: string }> = {
   verbal: {
     title: "Verbal Reasoning",
     description: "Reading comprehension, text completion, and sentence equivalence.",
-    icon: "✦",
   },
   quantitative: {
     title: "Quantitative Reasoning",
     description: "Arithmetic, algebra, geometry, and data analysis.",
-    icon: "∑",
   },
   writing: {
     title: "Analytical Writing",
     description: "Issue and argument essay prompts with rubric-style guidance.",
-    icon: "✎",
   },
 };
 

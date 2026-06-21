@@ -4,11 +4,14 @@ import { readArtTheme } from "@/lib/art/theme";
 export interface HeroPrismParticleOptions {
   particleCount: number;
   speed: number;
+  connectionDist: number;
   parallaxStrength: number;
   interactive: boolean;
   getMouseNorm: () => { x: number; y: number };
   getSize: () => { width: number; height: number };
 }
+
+type ParticleRole = "vertex" | "edge" | "interior";
 
 interface Particle {
   waveX: number;
@@ -17,6 +20,10 @@ interface Particle {
   prismY: number;
   size: number;
   hueOffset: number;
+  role: ParticleRole;
+  edgeIndex: number;
+  edgeT: number;
+  settleDelay: number;
 }
 
 interface PrismShape {
@@ -26,6 +33,11 @@ interface PrismShape {
 }
 
 const CYCLE_FRAMES = 480;
+const EDGES: [keyof PrismShape, keyof PrismShape][] = [
+  ["apex", "br"],
+  ["br", "bl"],
+  ["bl", "apex"],
+];
 
 export function createHeroPrismParticlesSketch(
   options: HeroPrismParticleOptions
@@ -44,22 +56,7 @@ export function createHeroPrismParticlesSketch(
     function initScene() {
       theme = readArtTheme();
       prism = computePrism(p.width, p.height);
-      particles = [];
-
-      for (let i = 0; i < options.particleCount; i++) {
-        const t = i / Math.max(options.particleCount - 1, 1);
-        const wave = wavePoint(t, p.width, p.height);
-        const edge = prismEdgePoint(t, prism);
-
-        particles.push({
-          waveX: wave.x,
-          waveY: wave.y,
-          prismX: edge.x,
-          prismY: edge.y,
-          size: p.random(1.4, 3.2),
-          hueOffset: p.random(0, 1),
-        });
-      }
+      particles = buildParticles(p, options.particleCount, prism);
     }
 
     p.draw = () => {
@@ -86,39 +83,62 @@ export function createHeroPrismParticlesSketch(
       const [qr, qg, qb] = theme.rayQuantRgb;
       const [wr, wg, wb] = theme.rayWritingRgb;
 
-      if (morph > 0.55) {
-        drawPrismGlow(p, prism, morph, theme.prismBeamAlpha, ir, ig, ib);
-      }
+      const positions: { x: number; y: number; morph: number }[] = [];
 
       for (const pt of particles) {
+        const particleMorph = particleMorphAmount(morph, pt.settleDelay);
         const waveDrift = p.sin(p.frameCount * 0.018 + pt.hueOffset * p.TWO_PI) * 6;
         // Travelling vertical undulation that lives while in the wave state and
         // settles to zero as the field consolidates into the prism (1 - morph).
-        const waveBob = p.sin(p.frameCount * 0.022 + pt.waveX * 0.035) * 12 * (1 - morph);
+        const waveBob =
+          p.sin(p.frameCount * 0.022 + pt.waveX * 0.035) * 12 * (1 - particleMorph);
         const wx = pt.waveX + waveDrift + parallaxX * (0.35 + pt.hueOffset * 0.25);
         const wy = pt.waveY + waveBob + parallaxY * 0.4;
 
-        const px = pt.prismX + parallaxX * 0.15;
-        const py = pt.prismY + parallaxY * 0.15 + attract * 8;
+        const settlePulse =
+          pt.role === "interior"
+            ? p.sin(p.frameCount * 0.014 + pt.hueOffset * p.TWO_PI) * 2 * particleMorph
+            : p.sin(p.frameCount * 0.02 + pt.edgeT * p.TWO_PI) * 1.5 * particleMorph;
 
-        const x = p.lerp(wx, px, morph);
-        const y = p.lerp(wy, py, morph);
+        const px = pt.prismX + parallaxX * 0.15 + settlePulse * 0.35;
+        const py = pt.prismY + parallaxY * 0.15 + attract * 8 + settlePulse * 0.35;
+
+        const x = p.lerp(wx, px, particleMorph);
+        const y = p.lerp(wy, py, particleMorph);
+
+        positions.push({ x, y, morph: particleMorph });
 
         const rayMix = pt.hueOffset;
         const rr = lerp3(vr, qr, wr, rayMix);
         const rg = lerp3(vg, qg, wg, rayMix);
         const rb = lerp3(vb, qb, wb, rayMix);
 
+        const roleAlpha =
+          pt.role === "vertex" ? 1 : pt.role === "edge" ? 0.92 : 0.62;
         const alpha =
-          theme.particleAlpha * p.lerp(0.55, 0.95, morph) * 255;
+          theme.particleAlpha * p.lerp(0.55, roleAlpha, particleMorph) * 255;
+
+        const roleSize =
+          pt.role === "vertex" ? 1.35 : pt.role === "edge" ? 1.2 : 0.95;
+        const radius = pt.size * p.lerp(1, roleSize, particleMorph);
 
         p.noStroke();
         p.fill(rr, rg, rb, alpha);
-        p.circle(x, y, pt.size * p.lerp(1, 1.15, morph));
+        p.circle(x, y, radius);
       }
 
-      if (morph > 0.45) {
-        drawPrismOutline(p, prism, morph, theme.prismBeamAlpha, ir, ig, ib);
+      if (morph > 0.62) {
+        drawEdgeConnections(
+          p,
+          particles,
+          positions,
+          morph,
+          options.connectionDist,
+          theme.particleAlpha,
+          ir,
+          ig,
+          ib
+        );
       }
     };
 
@@ -128,6 +148,74 @@ export function createHeroPrismParticlesSketch(
       initScene();
     };
   };
+}
+
+function buildParticles(p: p5, count: number, prism: PrismShape): Particle[] {
+  const particles: Particle[] = [];
+  const vertexCount = Math.min(3, count);
+  const edgeCount = Math.max(0, Math.round((count - vertexCount) * 0.42));
+  const interiorCount = Math.max(0, count - vertexCount - edgeCount);
+
+  const vertices: (keyof PrismShape)[] = ["apex", "bl", "br"];
+  for (let i = 0; i < vertexCount; i++) {
+    const key = vertices[i % 3];
+    const wave = wavePoint(i / Math.max(count - 1, 1), p.width, p.height);
+    const target = prism[key];
+    particles.push({
+      waveX: wave.x,
+      waveY: wave.y,
+      prismX: target.x,
+      prismY: target.y,
+      size: p.random(2.4, 3.4),
+      hueOffset: p.random(0, 1),
+      role: "vertex",
+      edgeIndex: i % 3,
+      edgeT: 0,
+      settleDelay: p.random(0, 0.08),
+    });
+  }
+
+  for (let i = 0; i < edgeCount; i++) {
+    const t = (i + 0.5) / edgeCount;
+    const wave = wavePoint((vertexCount + i) / Math.max(count - 1, 1), p.width, p.height);
+    const edgeIndex = Math.floor(t * 3) % 3;
+    const edgeT = (t * 3) % 1;
+    const target = prismEdgePoint(edgeIndex, edgeT, prism);
+
+    particles.push({
+      waveX: wave.x,
+      waveY: wave.y,
+      prismX: target.x,
+      prismY: target.y,
+      size: p.random(1.6, 2.8),
+      hueOffset: p.random(0, 1),
+      role: "edge",
+      edgeIndex,
+      edgeT,
+      settleDelay: p.random(0.04, 0.22),
+    });
+  }
+
+  for (let i = 0; i < interiorCount; i++) {
+    const t = (vertexCount + edgeCount + i) / Math.max(count - 1, 1);
+    const wave = wavePoint(t, p.width, p.height);
+    const target = randomInTriangle(prism, () => p.random());
+
+    particles.push({
+      waveX: wave.x,
+      waveY: wave.y,
+      prismX: target.x,
+      prismY: target.y,
+      size: p.random(1.2, 2.4),
+      hueOffset: p.random(0, 1),
+      role: "interior",
+      edgeIndex: -1,
+      edgeT: 0,
+      settleDelay: p.random(0.12, 0.38),
+    });
+  }
+
+  return particles;
 }
 
 function computePrism(width: number, height: number): PrismShape {
@@ -151,17 +239,30 @@ function wavePoint(t: number, width: number, height: number): { x: number; y: nu
   return { x, y };
 }
 
-function prismEdgePoint(t: number, prism: PrismShape): { x: number; y: number } {
-  const perimeter = 1;
-  const u = t * perimeter;
+function prismEdgePoint(
+  edgeIndex: number,
+  edgeT: number,
+  prism: PrismShape
+): { x: number; y: number } {
+  const [fromKey, toKey] = EDGES[edgeIndex % 3];
+  return lerpPoint(prism[fromKey], prism[toKey], edgeT);
+}
 
-  if (u < 0.34) {
-    return lerpPoint(prism.apex, prism.br, u / 0.34);
+function randomInTriangle(
+  prism: PrismShape,
+  random: () => number
+): { x: number; y: number } {
+  let u = random();
+  let v = random();
+  if (u + v > 1) {
+    u = 1 - u;
+    v = 1 - v;
   }
-  if (u < 0.67) {
-    return lerpPoint(prism.br, prism.bl, (u - 0.34) / 0.33);
-  }
-  return lerpPoint(prism.bl, prism.apex, (u - 0.67) / 0.33);
+  const w = 1 - u - v;
+  return {
+    x: w * prism.apex.x + u * prism.br.x + v * prism.bl.x,
+    y: w * prism.apex.y + u * prism.br.y + v * prism.bl.y,
+  };
 }
 
 function morphAmount(phase: number): number {
@@ -170,6 +271,12 @@ function morphAmount(phase: number): number {
   if (phase < 0.68) return 1;
   if (phase < 0.88) return 1 - easeInOut((phase - 0.68) / 0.2);
   return (1 - easeInOut((phase - 0.88) / 0.12)) * 0.08;
+}
+
+function particleMorphAmount(globalMorph: number, settleDelay: number): number {
+  const window = 0.82;
+  const t = (globalMorph - settleDelay) / window;
+  return easeInOut(Math.max(0, Math.min(1, t)));
 }
 
 function easeInOut(t: number): number {
@@ -192,33 +299,66 @@ function lerp3(a: number, b: number, c: number, t: number): number {
   return b + (c - b) * ((t - 0.5) * 2);
 }
 
-function drawPrismGlow(
+function drawEdgeConnections(
   p: p5,
-  prism: PrismShape,
+  particles: Particle[],
+  positions: { x: number; y: number; morph: number }[],
   morph: number,
-  beamAlpha: number,
+  connectionDist: number,
+  particleAlpha: number,
   ir: number,
   ig: number,
   ib: number
 ): void {
-  const fillAlpha = beamAlpha * (morph - 0.45) * 0.4 * 255;
-  p.noStroke();
-  p.fill(ir, ig, ib, fillAlpha);
-  p.triangle(prism.apex.x, prism.apex.y, prism.bl.x, prism.bl.y, prism.br.x, prism.br.y);
-}
+  const edgeStrength = easeInOut((morph - 0.62) / 0.28);
+  if (edgeStrength <= 0) return;
 
-function drawPrismOutline(
-  p: p5,
-  prism: PrismShape,
-  morph: number,
-  beamAlpha: number,
-  ir: number,
-  ig: number,
-  ib: number
-): void {
-  const strokeAlpha = beamAlpha * (morph - 0.35) * 0.7 * 255;
-  p.noFill();
-  p.stroke(ir, ig, ib, strokeAlpha);
-  p.strokeWeight(1.6);
-  p.triangle(prism.apex.x, prism.apex.y, prism.bl.x, prism.bl.y, prism.br.x, prism.br.y);
+  for (let edge = 0; edge < 3; edge++) {
+    const indices: number[] = [];
+    for (let i = 0; i < particles.length; i++) {
+      if (particles[i].role === "edge" && particles[i].edgeIndex === edge) {
+        indices.push(i);
+      }
+    }
+    indices.sort((a, b) => particles[a].edgeT - particles[b].edgeT);
+
+    for (let i = 0; i < indices.length - 1; i++) {
+      const a = positions[indices[i]];
+      const b = positions[indices[i + 1]];
+      const avgMorph = (a.morph + b.morph) * 0.5;
+      const d = p.dist(a.x, a.y, b.x, b.y);
+      const maxDist = Math.min(connectionDist * 0.55, d * 1.35);
+      if (d > maxDist) continue;
+
+      const alpha =
+        particleAlpha * edgeStrength * avgMorph * p.map(d, 0, maxDist, 0.42, 0.08) * 255;
+      p.noFill();
+      p.stroke(ir, ig, ib, alpha);
+      p.strokeWeight(0.9);
+      p.line(a.x, a.y, b.x, b.y);
+    }
+
+    if (indices.length > 0) {
+      const vertexIdx = particles.findIndex(
+        (pt) => pt.role === "vertex" && pt.edgeIndex === edge
+      );
+      if (vertexIdx >= 0) {
+        const v = positions[vertexIdx];
+        const first = positions[indices[0]];
+        const last = positions[indices[indices.length - 1]];
+        for (const neighbor of [first, last]) {
+          const avgMorph = (v.morph + neighbor.morph) * 0.5;
+          const d = p.dist(v.x, v.y, neighbor.x, neighbor.y);
+          const maxDist = connectionDist * 0.65;
+          if (d > maxDist) continue;
+          const alpha =
+            particleAlpha * edgeStrength * avgMorph * p.map(d, 0, maxDist, 0.35, 0.06) * 255;
+          p.noFill();
+          p.stroke(ir, ig, ib, alpha);
+          p.strokeWeight(0.85);
+          p.line(v.x, v.y, neighbor.x, neighbor.y);
+        }
+      }
+    }
+  }
 }

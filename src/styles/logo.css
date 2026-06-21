@@ -1,40 +1,5 @@
 .logo {
   display: block;
   flex-shrink: 0;
-  /* Clip to the icon box so the merging checks never spill into the header. */
-  overflow: hidden;
-  color: inherit;
-}
-
-.logo-check {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/*
- * Each check pivots about its own centre. Because every check path is authored
- * centred on the origin (the SVG centre in the -20..20 viewBox), fill-box +
- * centre keeps rotations/scales pinned to the wheel centre in every browser.
- */
-.logo-spoke {
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0.9;
-  animation-duration: 5s;
-  animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
-  animation-iteration-count: infinite;
-}
-
-.logo-survivor {
-  opacity: 1;
-  stroke-width: 2.6;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .logo-spoke {
-    animation: none;
-  }
+  border-radius: 7px;
 }
