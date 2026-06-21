@@ -1,54 +1,85 @@
 import type p5 from "p5";
 import { readArtTheme } from "@/lib/art/theme";
+import type { SectionSketchOptions } from "./types";
 
-export interface SectionSketchOptions {
-  particleCount: number;
-  speed: number;
-}
-
-interface Glyph {
+interface Particle {
   x: number;
   y: number;
-  char: string;
-  phase: number;
+  vx: number;
+  vy: number;
+  size: number;
+  age: number;
 }
 
-const GLYPHS = "αβγδεζηθικλμνξοπρστυφχψωABCDEF";
+const CENTER = { x: 24, y: 24 };
+const CORNERS = [
+  { x: 5, y: 5 },
+  { x: 43, y: 5 },
+  { x: 5, y: 43 },
+  { x: 43, y: 43 },
+];
 
 export function createVerbalSketch(options: SectionSketchOptions): (p: p5) => void {
-  let glyphs: Glyph[] = [];
+  let particles: Particle[] = [];
   let theme = readArtTheme();
 
   return (p: p5) => {
+    function spawn(scatter: boolean): Particle {
+      const corner = CORNERS[Math.floor(p.random(CORNERS.length))];
+      const angle =
+        p.atan2(CENTER.y - corner.y, CENTER.x - corner.x) + p.random(-0.16, 0.16);
+      const speed = options.speed * p.random(1.1, 1.8);
+      const t = scatter ? p.random(0, 1) : 0;
+      return {
+        x: p.lerp(corner.x, CENTER.x, t) + p.random(-1.5, 1.5),
+        y: p.lerp(corner.y, CENTER.y, t) + p.random(-1.5, 1.5),
+        vx: p.cos(angle) * speed,
+        vy: p.sin(angle) * speed,
+        size: p.random(1.3, 2.3),
+        age: scatter ? p.random(12, 40) : 0,
+      };
+    }
+
     p.setup = () => {
       p.createCanvas(48, 48);
-      initGlyphs();
+      particles = Array.from({ length: options.particleCount }, () => spawn(true));
     };
-
-    function initGlyphs() {
-      glyphs = [];
-      for (let i = 0; i < options.particleCount; i++) {
-        glyphs.push({
-          x: p.random(8, 40),
-          y: p.random(8, 40),
-          char: GLYPHS[Math.floor(p.random(GLYPHS.length))],
-          phase: p.random(p.TWO_PI),
-        });
-      }
-    }
 
     p.draw = () => {
       theme = readArtTheme();
-      const [ar, ag, ab] = theme.accentRgb;
+      const [r, g, b] = theme.rayVerbalRgb;
       p.background(p.color(theme.bg));
+      p.noStroke();
 
-      p.textSize(8);
-      p.textAlign(p.CENTER, p.CENTER);
-      for (const g of glyphs) {
-        const drift = p.sin(p.frameCount * options.speed * 0.02 + g.phase) * 2;
-        p.fill(ar, ag, ab, theme.particleAlpha * 200);
-        p.noStroke();
-        p.text(g.char, g.x + drift, g.y);
+      // Soft luminous core where the streams converge.
+      const pulse = 3 + p.sin(p.frameCount * 0.05) * 0.7;
+      p.fill(r, g, b, theme.particleAlpha * 70);
+      p.circle(CENTER.x, CENTER.y, pulse * 2.4);
+      p.fill(r, g, b, theme.particleAlpha * 150);
+      p.circle(CENTER.x, CENTER.y, pulse);
+
+      for (const particle of particles) {
+        const dx = CENTER.x - particle.x;
+        const dy = CENTER.y - particle.y;
+        const dist = Math.hypot(dx, dy) || 1;
+
+        // Steady steering toward the centre keeps the inward flow tidy.
+        particle.vx += (dx / dist) * 0.02;
+        particle.vy += (dy / dist) * 0.02;
+        particle.vx *= 0.96;
+        particle.vy *= 0.96;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.age += 1;
+
+        const fadeIn = p.constrain(particle.age / 12, 0, 1);
+        const fadeCore = p.constrain(p.map(dist, 3, 10, 0, 1), 0, 1);
+        p.fill(r, g, b, theme.particleAlpha * 235 * fadeIn * fadeCore);
+        p.circle(particle.x, particle.y, particle.size);
+
+        if (dist < 3.5) {
+          Object.assign(particle, spawn(false));
+        }
       }
     };
   };

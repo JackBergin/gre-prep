@@ -19,7 +19,6 @@ export default function HomePage() {
       <HomeHero
         headline={
           <>
-            <Chip as="span">PrismPrep</Chip>
             <h1 style={{ color: "var(--ink)" }}>
               Clarity from
               <br />

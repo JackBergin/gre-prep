@@ -21,15 +21,16 @@
   --press:  inset 5px 5px 10px var(--dark), inset -5px -5px 10px var(--light);
   --font:   "Poppins", system-ui, sans-serif;
 
-  /* Art tokens */
-  --art-opacity: 0.82;
-  --art-particle-alpha: 0.6;
+  /* Art tokens — light mode needs higher alpha/opacity and deeper rays so the
+     prism reads clearly against the pale #E0E5EC background. */
+  --art-opacity: 1;
+  --art-particle-alpha: 0.9;
   --art-thumbnail-opacity: 0.85;
   --art-blend-mode: normal;
-  --prism-beam-alpha: 0.72;
-  --prism-ray-verbal: color-mix(in srgb, var(--accent) 68%, #7C6CF0);
-  --prism-ray-quant: var(--accent);
-  --prism-ray-writing: color-mix(in srgb, var(--accent) 62%, #E8A838);
+  --prism-beam-alpha: 0.85;
+  --prism-ray-verbal: color-mix(in srgb, #6A4FE0 84%, var(--accent));
+  --prism-ray-quant: color-mix(in srgb, var(--accent) 88%, var(--ink));
+  --prism-ray-writing: color-mix(in srgb, #D98A1A 82%, var(--accent));
   --hero-fallback-gradient: linear-gradient(
     118deg,
     color-mix(in srgb, var(--prism-ray-verbal) 10%, var(--bg)),

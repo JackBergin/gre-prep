@@ -1,10 +1,8 @@
 import type p5 from "p5";
 import { readArtTheme } from "@/lib/art/theme";
+import type { SectionSketchOptions } from "./types";
 
-export interface SectionSketchOptions {
-  particleCount: number;
-  speed: number;
-}
+export type { SectionSketchOptions };
 
 interface Node {
   x: number;

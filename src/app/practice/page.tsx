@@ -4,6 +4,7 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import SectionHeader from "@/components/sections/SectionHeader";
+import PracticeField from "@/components/art/PracticeField";
 import { Section, TestDefinition } from "@/lib/types";
 import { sections } from "@/lib/sections";
 import { formatTime, getTotalQuestionCount } from "@/lib/tests";
@@ -42,10 +43,11 @@ export default function PracticePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-16 flex flex-col gap-12">
-      <div className="flex flex-col gap-3">
-        <Chip as="span">Test Gallery</Chip>
-        <h1 style={{ color: "var(--ink)" }}>Practice Tests</h1>
-        <p style={{ color: "var(--muted)" }}>
+      <div className="flex flex-col gap-3" style={{ position: "relative", overflow: "hidden", borderRadius: "var(--radius)", padding: "2.5rem 2rem" }}>
+        <PracticeField />
+        <Chip as="span" style={{ position: "relative", zIndex: 1 }}>Test Gallery</Chip>
+        <h1 style={{ color: "var(--ink)", position: "relative", zIndex: 1 }}>Practice Tests</h1>
+        <p style={{ color: "var(--muted)", position: "relative", zIndex: 1 }}>
           Choose a curated test from our library of {totalQuestions}+ questions. Each path has a
           set time limit and instant scoring with detailed explanations.
         </p>

@@ -26,6 +26,12 @@
   opacity: var(--art-opacity);
 }
 
+.hero-field--slime {
+  opacity: 0.35;
+  mix-blend-mode: screen;
+  z-index: -1;
+}
+
 .hero-field--static {
   background: var(--hero-fallback-gradient);
   opacity: 1;
@@ -104,17 +110,15 @@
 .section-thumbnail--verbal::before {
   inset: 10px 8px;
   background:
-    radial-gradient(circle at 28% 38%, color-mix(in srgb, var(--section-ray) 55%, transparent) 0 1.5px, transparent 2px),
-    radial-gradient(circle at 62% 22%, color-mix(in srgb, var(--section-ray) 45%, transparent) 0 1.5px, transparent 2px),
-    radial-gradient(circle at 72% 68%, color-mix(in srgb, var(--section-ray) 50%, transparent) 0 1.5px, transparent 2px);
+    radial-gradient(circle at 8% 12%, color-mix(in srgb, var(--section-ray) 55%, transparent) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--section-ray) 55%, transparent) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 8% 88%, color-mix(in srgb, var(--section-ray) 55%, transparent) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 92% 88%, color-mix(in srgb, var(--section-ray) 55%, transparent) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 50% 58%, color-mix(in srgb, var(--section-ray) 35%, transparent) 0 3px, transparent 4px);
 }
 
 .section-thumbnail--verbal::after {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  color: color-mix(in srgb, var(--section-ray) 72%, var(--ink));
-  content: "αβ";
+  content: none;
 }
 
 .section-thumbnail--quantitative::before {
@@ -155,6 +159,15 @@
     transparent
   );
   transform: rotate(-8deg) translateY(6px);
+}
+
+.practice-field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: var(--art-opacity);
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .hero-section {
