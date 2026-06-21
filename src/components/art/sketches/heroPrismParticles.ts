@@ -201,7 +201,7 @@ function drawPrismGlow(
   ig: number,
   ib: number
 ): void {
-  const fillAlpha = beamAlpha * (morph - 0.45) * 0.18 * 255;
+  const fillAlpha = beamAlpha * (morph - 0.45) * 0.4 * 255;
   p.noStroke();
   p.fill(ir, ig, ib, fillAlpha);
   p.triangle(prism.apex.x, prism.apex.y, prism.bl.x, prism.bl.y, prism.br.x, prism.br.y);
@@ -216,9 +216,9 @@ function drawPrismOutline(
   ig: number,
   ib: number
 ): void {
-  const strokeAlpha = beamAlpha * (morph - 0.35) * 0.35 * 255;
+  const strokeAlpha = beamAlpha * (morph - 0.35) * 0.7 * 255;
   p.noFill();
   p.stroke(ir, ig, ib, strokeAlpha);
-  p.strokeWeight(1.2);
+  p.strokeWeight(1.6);
   p.triangle(prism.apex.x, prism.apex.y, prism.bl.x, prism.bl.y, prism.br.x, prism.br.y);
 }

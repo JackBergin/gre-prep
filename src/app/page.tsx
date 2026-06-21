@@ -32,7 +32,7 @@ export default function HomePage() {
             <h1 style={{ color: "var(--ink)" }}>
               Clarity from
               <br />
-              <span style={{ color: "var(--accent)" }}>Complexity.</span>
+              <span style={{ color: "white" }}>Complexity.</span>
             </h1>
           </>
         }
