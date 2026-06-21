@@ -25,12 +25,17 @@
   --art-opacity: 0.55;
   --art-particle-alpha: 0.35;
   --art-thumbnail-opacity: 0.85;
-  --art-blend-mode: multiply;
+  --art-blend-mode: normal;
+  --prism-beam-alpha: 0.42;
+  --prism-ray-verbal: color-mix(in srgb, var(--accent) 68%, #7C6CF0);
+  --prism-ray-quant: var(--accent);
+  --prism-ray-writing: color-mix(in srgb, var(--accent) 62%, #E8A838);
   --hero-fallback-gradient: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--accent) 12%, var(--bg)),
-    var(--bg) 55%,
-    color-mix(in srgb, var(--accent) 8%, var(--bg))
+    118deg,
+    color-mix(in srgb, var(--prism-ray-verbal) 10%, var(--bg)),
+    var(--bg) 42%,
+    color-mix(in srgb, var(--prism-ray-quant) 8%, var(--bg)) 68%,
+    color-mix(in srgb, var(--prism-ray-writing) 10%, var(--bg))
   );
 
   /* Glass tokens */
@@ -50,15 +55,20 @@
   --raise:  8px 8px 16px var(--dark), -8px -8px 16px var(--light);
   --press:  inset 5px 5px 10px var(--dark), inset -5px -5px 10px var(--light);
 
-  --art-opacity: 0.65;
+  --art-opacity: 0.7;
   --art-particle-alpha: 0.4;
   --art-thumbnail-opacity: 0.9;
-  --art-blend-mode: screen;
+  --art-blend-mode: normal;
+  --prism-beam-alpha: 0.52;
+  --prism-ray-verbal: color-mix(in srgb, var(--accent) 72%, #A78BFA);
+  --prism-ray-quant: var(--accent);
+  --prism-ray-writing: color-mix(in srgb, var(--accent) 66%, #FBBF24);
   --hero-fallback-gradient: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--accent) 18%, var(--bg)),
-    var(--bg) 50%,
-    color-mix(in srgb, var(--accent) 10%, var(--bg))
+    118deg,
+    color-mix(in srgb, var(--prism-ray-verbal) 16%, var(--bg)),
+    var(--bg) 40%,
+    color-mix(in srgb, var(--prism-ray-quant) 12%, var(--bg)) 66%,
+    color-mix(in srgb, var(--prism-ray-writing) 14%, var(--bg))
   );
 
   --glass-bg: rgba(255, 255, 255, 0.06);

@@ -14,21 +14,32 @@ const sections = (["verbal", "quantitative", "writing"] as const).map((key) => (
   time: key === "writing" ? "60 min" : "20 min",
 }));
 
+const sectionRayVar = {
+  verbal: "var(--prism-ray-verbal)",
+  quantitative: "var(--prism-ray-quant)",
+  writing: "var(--prism-ray-writing)",
+} as const;
+
 export default function HomePage() {
   const totalQuestions = getTotalQuestionCount();
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16 flex flex-col gap-20">
-      <HomeHero>
-        <Chip as="span">GRE Test Prep</Chip>
-        <h1 style={{ color: "var(--ink)" }}>
-          Prepare Smarter.
-          <br />
-          <span style={{ color: "var(--accent)" }}>Score Higher.</span>
-        </h1>
+      <HomeHero
+        headline={
+          <>
+            <Chip as="span">PrismPrep</Chip>
+            <h1 style={{ color: "var(--ink)" }}>
+              Clarity from
+              <br />
+              <span style={{ color: "var(--accent)" }}>Complexity.</span>
+            </h1>
+          </>
+        }
+      >
         <p className="max-w-xl text-lg" style={{ color: "var(--muted)" }}>
-          Full-length GRE practice covering Verbal Reasoning, Quantitative Reasoning, and
-          Analytical Writing — with instant scoring and detailed explanations.
+          GRE prep is a lot to absorb. PrismPrep refracts it into three focused paths — Verbal,
+          Quantitative, and Writing — with timed practice and instant feedback.
         </p>
         <Link href="/practice" className="btn mt-2">
           Browse Test Gallery →
@@ -39,7 +50,11 @@ export default function HomePage() {
         <h2 style={{ color: "var(--ink)" }}>What&apos;s Covered</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {sections.map((s) => (
-            <GlassCard key={s.key} className="flex flex-col gap-4 p-6">
+            <GlassCard
+              key={s.key}
+              className="flex flex-col gap-4 p-6"
+              style={{ "--section-ray": sectionRayVar[s.key] } as React.CSSProperties}
+            >
               <SectionThumbnail section={s.key} />
               <div>
                 <h3 style={{ color: "var(--ink)" }}>{s.title}</h3>
@@ -66,7 +81,7 @@ export default function HomePage() {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           { label: "Practice Questions", value: String(totalQuestions) },
-          { label: "GRE Sections", value: "3" },
+          { label: "Practice Paths", value: "3" },
           { label: "Instant Feedback", value: "✓" },
         ].map((stat) => (
           <Card key={stat.label} className="flex flex-col items-center text-center gap-2">

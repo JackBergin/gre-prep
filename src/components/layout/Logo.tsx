@@ -4,7 +4,8 @@ interface LogoProps {
 }
 
 const SPOKE_COUNT = 8;
-const SPOKE_ANGLES = Array.from({ length: SPOKE_COUNT }, (_, index) => index * 45);
+/** Pinwheel spokes from 12 o'clock, stepping clockwise. */
+const SPOKE_ANGLES = Array.from({ length: SPOKE_COUNT }, (_, index) => -90 + index * 45);
 
 /** Small checkmark path, drawn near the origin for spoke placement. */
 const SPOKE_CHECK_PATH = "M -2.2 -0.4 L -0.6 1.2 L 2.4 -2.2";

@@ -7,8 +7,9 @@ import "../styles/logo.css";
 import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
-  title: "GRE Prep — Ace the Test",
-  description: "Full-length GRE practice with Verbal, Quantitative, and Analytical Writing sections.",
+  title: "PrismPrep — Focused GRE Practice",
+  description:
+    "Break complex GRE prep into clear, focused paths. Full-length Verbal, Quantitative, and Analytical Writing practice with instant scoring.",
 };
 
 const themeScript = `

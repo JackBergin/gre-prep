@@ -46,8 +46,8 @@ export default function PracticePage() {
         <Chip as="span">Test Gallery</Chip>
         <h1 style={{ color: "var(--ink)" }}>Practice Tests</h1>
         <p style={{ color: "var(--muted)" }}>
-          Choose a curated test from our library of {totalQuestions}+ questions. Each test
-          has a set time limit and instant scoring with detailed explanations.
+          Choose a curated test from our library of {totalQuestions}+ questions. Each path has a
+          set time limit and instant scoring with detailed explanations.
         </p>
       </div>
 

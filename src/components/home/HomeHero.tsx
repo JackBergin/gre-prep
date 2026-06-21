@@ -3,15 +3,19 @@
 import HeroField from "@/components/art/HeroField";
 
 interface HomeHeroProps {
+  headline: React.ReactNode;
   children: React.ReactNode;
 }
 
-export default function HomeHero({ children }: HomeHeroProps) {
+export default function HomeHero({ headline, children }: HomeHeroProps) {
   return (
     <section className="hero-section">
-      <HeroField />
       <div className="hero-section__content">
         <div className="glass-panel flex flex-col items-center text-center gap-6 p-8 md:p-10">
+          <div className="hero-section__headline-wrap">
+            <HeroField />
+            <div className="hero-section__headline">{headline}</div>
+          </div>
           {children}
         </div>
       </div>

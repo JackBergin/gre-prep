@@ -6,6 +6,13 @@ export interface ArtTheme {
   inkRgb: [number, number, number];
   artOpacity: number;
   particleAlpha: number;
+  prismBeamAlpha: number;
+  rayVerbal: string;
+  rayQuant: string;
+  rayWriting: string;
+  rayVerbalRgb: [number, number, number];
+  rayQuantRgb: [number, number, number];
+  rayWritingRgb: [number, number, number];
 }
 
 function parseCssColor(color: string): [number, number, number] {
@@ -33,6 +40,10 @@ function readNumberVar(name: string, fallback: number): number {
 export function readArtTheme(): ArtTheme {
   const accent = readVar("--accent", "#5B7CFA");
   const ink = readVar("--ink", "#41485A");
+  const rayVerbal = readVar("--prism-ray-verbal", accent);
+  const rayQuant = readVar("--prism-ray-quant", accent);
+  const rayWriting = readVar("--prism-ray-writing", accent);
+
   return {
     bg: readVar("--bg", "#E0E5EC"),
     accent,
@@ -41,5 +52,12 @@ export function readArtTheme(): ArtTheme {
     inkRgb: parseCssColor(ink),
     artOpacity: readNumberVar("--art-opacity", 0.55),
     particleAlpha: readNumberVar("--art-particle-alpha", 0.35),
+    prismBeamAlpha: readNumberVar("--prism-beam-alpha", 0.45),
+    rayVerbal,
+    rayQuant,
+    rayWriting,
+    rayVerbalRgb: parseCssColor(rayVerbal),
+    rayQuantRgb: parseCssColor(rayQuant),
+    rayWritingRgb: parseCssColor(rayWriting),
   };
 }

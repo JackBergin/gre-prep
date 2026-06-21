@@ -9,11 +9,11 @@ export default function Header() {
         href="/"
         className="flex items-center gap-2.5"
         style={{ textDecoration: "none", color: "var(--accent)" }}
-        aria-label="GRE Prep home"
+        aria-label="PrismPrep home"
       >
         <Logo size={40} />
         <span className="font-bold text-xl" style={{ color: "var(--ink)" }}>
-          GRE Prep
+          PrismPrep
         </span>
       </Link>
       <nav className="flex items-center gap-3">

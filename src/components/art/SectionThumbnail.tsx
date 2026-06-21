@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Section } from "@/lib/types";
 import ArtCanvas from "./ArtCanvas";
-import { createVerbalSketch } from "./sketches/verbalSketch";
 import { createQuantSketch } from "./sketches/quantSketch";
+import { createVerbalSketch } from "./sketches/verbalSketch";
 import { createWritingSketch } from "./sketches/writingSketch";
 import { getArtConfig } from "@/lib/art/config";
 import {
@@ -15,15 +15,21 @@ import {
   subscribeVisibility,
 } from "@/lib/art/motion";
 
-const sketchMap = {
+interface SectionThumbnailProps {
+  section: Section;
+}
+
+const sectionRayVar: Record<Section, string> = {
+  verbal: "var(--prism-ray-verbal)",
+  quantitative: "var(--prism-ray-quant)",
+  writing: "var(--prism-ray-writing)",
+};
+
+const sectionSketchFactory = {
   verbal: createVerbalSketch,
   quantitative: createQuantSketch,
   writing: createWritingSketch,
 } as const;
-
-interface SectionThumbnailProps {
-  section: Section;
-}
 
 export default function SectionThumbnail({ section }: SectionThumbnailProps) {
   const [reducedMotion, setReducedMotion] = useState(() => prefersReducedMotion());
@@ -50,8 +56,7 @@ export default function SectionThumbnail({ section }: SectionThumbnailProps) {
   const config = useMemo(() => getArtConfig(mobile), [mobile]);
 
   const sketchFactory = useCallback(() => {
-    const create = sketchMap[section];
-    return create({
+    return sectionSketchFactory[section]({
       particleCount: config.thumbParticleCount,
       speed: config.thumbSpeed,
     });
@@ -59,19 +64,20 @@ export default function SectionThumbnail({ section }: SectionThumbnailProps) {
 
   if (reducedMotion) {
     return (
-      <div className="section-thumbnail" aria-hidden="true">
-        <div
-          className="w-full h-full flex items-center justify-center text-lg font-bold"
-          style={{ color: "var(--accent)" }}
-        >
-          {section === "verbal" ? "✦" : section === "quantitative" ? "∑" : "✎"}
-        </div>
-      </div>
+      <div
+        className={`section-thumbnail section-thumbnail--static section-thumbnail--${section}`}
+        aria-hidden="true"
+        style={{ "--section-ray": sectionRayVar[section] } as React.CSSProperties}
+      />
     );
   }
 
   return (
-    <div className="section-thumbnail" key={themeKey}>
+    <div
+      className="section-thumbnail"
+      key={themeKey}
+      style={{ "--section-ray": sectionRayVar[section] } as React.CSSProperties}
+    >
       <ArtCanvas sketchFactory={sketchFactory} paused={!visible} />
       <div className="section-thumbnail__overlay" />
     </div>

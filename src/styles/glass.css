@@ -10,9 +10,34 @@
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
+  border: 1px solid transparent;
   border-radius: var(--radius);
   box-shadow: var(--glass-shadow);
+  background-clip: padding-box;
+  position: relative;
+}
+
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--prism-ray-verbal) 35%, transparent),
+    color-mix(in srgb, var(--prism-ray-quant) 25%, var(--glass-border)),
+    color-mix(in srgb, var(--prism-ray-writing) 30%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .glass-card {
@@ -22,6 +47,30 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   box-shadow: var(--raise), var(--glass-shadow);
+  position: relative;
+}
+
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--section-ray, var(--prism-ray-quant)) 28%, transparent) 0%,
+    transparent 45%,
+    color-mix(in srgb, var(--prism-ray-writing) 18%, transparent) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .glass-nav {
@@ -56,5 +105,21 @@
   .glass-nav,
   .header-glass {
     background: var(--bg);
+  }
+
+  .glass-panel::before,
+  .glass-card::after {
+    display: none;
+  }
+}
+
+@supports not (mask-composite: exclude) {
+  .glass-panel::before,
+  .glass-card::after {
+    display: none;
+  }
+
+  .glass-panel {
+    border-color: var(--glass-border);
   }
 }

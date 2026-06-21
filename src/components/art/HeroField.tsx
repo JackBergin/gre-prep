@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ArtCanvas from "./ArtCanvas";
-import { createHeroFieldSketch } from "./sketches/heroField";
+import { createHeroPrismParticlesSketch } from "./sketches/heroPrismParticles";
 import { getArtConfig } from "@/lib/art/config";
 import {
   isMobileViewport,
@@ -43,7 +43,7 @@ export default function HeroField() {
     if (mobile || reducedMotion) return;
 
     const onMove = (e: MouseEvent) => {
-      const el = containerRef.current?.closest(".hero-section");
+      const el = containerRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
       mouseRef.current = {
@@ -59,29 +59,25 @@ export default function HeroField() {
   const config = useMemo(() => getArtConfig(mobile), [mobile]);
 
   const sketchFactory = useCallback(() => {
-    return createHeroFieldSketch({
+    return createHeroPrismParticlesSketch({
       particleCount: config.heroParticleCount,
       speed: config.heroSpeed,
-      connectionDist: config.heroConnectionDist,
       parallaxStrength: config.heroParallax,
       interactive: !mobile,
       getMouseNorm: () => mouseRef.current,
-      getSize: () => {
-        const el = containerRef.current?.closest(".hero-section");
-        return {
-          width: el?.clientWidth ?? window.innerWidth,
-          height: el?.clientHeight ?? 420,
-        };
-      },
+      getSize: () => ({
+        width: containerRef.current?.clientWidth ?? 640,
+        height: containerRef.current?.clientHeight ?? 220,
+      }),
     });
-  }, [config, mobile]);
+  }, [mobile, config]);
 
   if (reducedMotion) {
     return <div className="hero-field hero-field--static" aria-hidden="true" />;
   }
 
   return (
-    <div ref={containerRef} className="hero-field" key={themeKey}>
+    <div ref={containerRef} className="hero-field hero-field--prism" key={themeKey}>
       <ArtCanvas sketchFactory={sketchFactory} paused={!visible} />
     </div>
   );
