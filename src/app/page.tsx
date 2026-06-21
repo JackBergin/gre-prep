@@ -1,67 +1,46 @@
 import Link from "next/link";
+import HomeHero from "@/components/home/HomeHero";
+import SectionThumbnail from "@/components/art/SectionThumbnail";
+import GlassCard from "@/components/ui/GlassCard";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
+import { getQuestionCountBySection } from "@/lib/questions";
+import { getTotalQuestionCount, sectionMeta } from "@/lib/tests";
 
-const sections = [
-  {
-    key: "verbal",
-    title: "Verbal Reasoning",
-    description:
-      "Reading comprehension, text completion, and sentence equivalence. Test your command of English vocabulary and your ability to analyze written material.",
-    questions: 10,
-    time: "20 min",
-    icon: "✦",
-  },
-  {
-    key: "quantitative",
-    title: "Quantitative Reasoning",
-    description:
-      "Arithmetic, algebra, geometry, and data analysis. Demonstrate your ability to reason quantitatively and solve problems using mathematical concepts.",
-    questions: 10,
-    time: "20 min",
-    icon: "∑",
-  },
-  {
-    key: "writing",
-    title: "Analytical Writing",
-    description:
-      "Issue and argument tasks. Articulate complex ideas clearly, examine claims, and construct well-reasoned arguments.",
-    questions: 2,
-    time: "60 min",
-    icon: "✎",
-  },
-];
+const sections = (["verbal", "quantitative", "writing"] as const).map((key) => ({
+  key,
+  ...sectionMeta[key],
+  questions: getQuestionCountBySection(key) as number,
+  time: key === "writing" ? "60 min" : "20 min",
+}));
 
 export default function HomePage() {
+  const totalQuestions = getTotalQuestionCount();
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-16 flex flex-col gap-20">
-      {/* Hero */}
-      <section className="flex flex-col items-center text-center gap-6">
+      <HomeHero>
         <Chip as="span">GRE Test Prep</Chip>
         <h1 style={{ color: "var(--ink)" }}>
-          Prepare Smarter.<br />
+          Prepare Smarter.
+          <br />
           <span style={{ color: "var(--accent)" }}>Score Higher.</span>
         </h1>
         <p className="max-w-xl text-lg" style={{ color: "var(--muted)" }}>
-          Full-length GRE practice covering Verbal Reasoning, Quantitative Reasoning, and Analytical Writing — with instant scoring and detailed explanations.
+          Full-length GRE practice covering Verbal Reasoning, Quantitative Reasoning, and
+          Analytical Writing — with instant scoring and detailed explanations.
         </p>
         <Link href="/practice" className="btn mt-2">
-          Start Practicing →
+          Browse Test Gallery →
         </Link>
-      </section>
+      </HomeHero>
 
-      {/* Section cards */}
       <section className="flex flex-col gap-6">
         <h2 style={{ color: "var(--ink)" }}>What&apos;s Covered</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {sections.map((s) => (
-            <Card key={s.key} className="flex flex-col gap-4">
-              <div
-                className="w-12 h-12 flex items-center justify-center rounded-2xl text-2xl font-bold text-white"
-                style={{ background: "var(--accent)", boxShadow: "var(--raise)" }}
-              >
-                {s.icon}
-              </div>
+            <GlassCard key={s.key} className="flex flex-col gap-4 p-6">
+              <SectionThumbnail section={s.key} />
               <div>
                 <h3 style={{ color: "var(--ink)" }}>{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
@@ -72,18 +51,21 @@ export default function HomePage() {
                 <Chip as="span">{s.questions} Questions</Chip>
                 <Chip as="span">{s.time}</Chip>
               </div>
-              <Link href={`/quiz/${s.key}`} className="btn btn--ghost" style={{ justifyContent: "center" }}>
-                Begin →
+              <Link
+                href={`/practice#${s.key}`}
+                className="btn btn--ghost"
+                style={{ justifyContent: "center" }}
+              >
+                View Tests →
               </Link>
-            </Card>
+            </GlassCard>
           ))}
         </div>
       </section>
 
-      {/* Stats row */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: "Practice Questions", value: "22" },
+          { label: "Practice Questions", value: String(totalQuestions) },
           { label: "GRE Sections", value: "3" },
           { label: "Instant Feedback", value: "✓" },
         ].map((stat) => (

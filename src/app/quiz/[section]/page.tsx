@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Question, Answer, Section } from "@/lib/types";
+import { useEffect, useState, useCallback, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Question, Answer } from "@/lib/types";
 import QuestionCard from "@/components/quiz/QuestionCard";
 import AnswerOption from "@/components/quiz/AnswerOption";
 import Timer from "@/components/quiz/Timer";
@@ -9,6 +9,8 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
+import { getTestById } from "@/lib/tests";
+import { sectionMeta } from "@/lib/tests";
 
 const SECTION_TIME: Record<string, number> = {
   verbal: 20 * 60,
@@ -16,17 +18,8 @@ const SECTION_TIME: Record<string, number> = {
   writing: 60 * 60,
 };
 
-const SECTION_LABEL: Record<string, string> = {
-  verbal: "Verbal Reasoning",
-  quantitative: "Quantitative Reasoning",
-  writing: "Analytical Writing",
-};
-
-export default function QuizPage() {
-  const params = useParams();
+function QuizContent({ section, testId }: { section: string; testId: string | null }) {
   const router = useRouter();
-  const section = params.section as string;
-
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
@@ -34,15 +27,26 @@ export default function QuizPage() {
   const [writingText, setWritingText] = useState("");
   const [multiSelected, setMultiSelected] = useState<string[]>([]);
 
+  const test = testId ? getTestById(testId) : undefined;
+  const timeLimit = test?.timeLimit ?? SECTION_TIME[section] ?? 1200;
+  const testTitle = test?.title ?? null;
+
   useEffect(() => {
-    fetch(`/api/questions?section=${section}`)
+    const url = testId
+      ? `/api/questions?test=${testId}`
+      : `/api/questions?section=${section}`;
+
+    fetch(url)
       .then((r) => r.json())
       .then((data: Question[]) => {
         setQuestions(data);
         setAnswers(data.map((q) => ({ questionId: q.id, selectedAnswer: null })));
+        setCurrentIndex(0);
+        setMultiSelected([]);
+        setWritingText("");
         setLoading(false);
       });
-  }, [section]);
+  }, [section, testId]);
 
   const currentQuestion = questions[currentIndex];
   const isWriting = section === "writing";
@@ -61,7 +65,9 @@ export default function QuizPage() {
           ? [...prev, option]
           : [prev[1], option];
         setAnswers((ans) =>
-          ans.map((a, i) => (i === currentIndex ? { ...a, selectedAnswer: next.length ? next : null } : a))
+          ans.map((a, i) =>
+            i === currentIndex ? { ...a, selectedAnswer: next.length ? next : null } : a
+          )
         );
         return next;
       });
@@ -78,6 +84,21 @@ export default function QuizPage() {
       ans.map((a, i) => (i === currentIndex ? { ...a, selectedAnswer: text } : a))
     );
   };
+
+  const submitQuiz = useCallback(async () => {
+    const res = await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ section, answers }),
+    });
+    const result = await res.json();
+    sessionStorage.setItem("quizResult", JSON.stringify(result));
+    router.push("/results");
+  }, [section, answers, router]);
+
+  const handleExpire = useCallback(() => {
+    submitQuiz();
+  }, [submitQuiz]);
 
   const goNext = () => {
     if (currentIndex < questions.length - 1) {
@@ -97,21 +118,6 @@ export default function QuizPage() {
       submitQuiz();
     }
   };
-
-  const submitQuiz = useCallback(async () => {
-    const res = await fetch("/api/score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ section, answers }),
-    });
-    const result = await res.json();
-    sessionStorage.setItem("quizResult", JSON.stringify(result));
-    router.push("/results");
-  }, [section, answers, router]);
-
-  const handleExpire = useCallback(() => {
-    submitQuiz();
-  }, [submitQuiz]);
 
   if (loading) {
     return (
@@ -134,31 +140,30 @@ export default function QuizPage() {
   if (!currentQuestion) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Card>No questions found for this section.</Card>
+        <Card>No questions found for this test.</Card>
       </div>
     );
   }
 
   const progressPct = ((currentIndex + 1) / questions.length) * 100;
   const selected = getSelected();
+  const sectionLabel = sectionMeta[section as keyof typeof sectionMeta]?.title ?? section;
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 flex flex-col gap-8">
-      {/* Top bar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-          <div className="flex items-center gap-3 mb-2">
-            <Chip as="span">{SECTION_LABEL[section] ?? section}</Chip>
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <Chip as="span">{sectionLabel}</Chip>
+            {testTitle && <Chip as="span">{testTitle}</Chip>}
           </div>
           <ProgressBar value={progressPct} label={`${currentIndex + 1} / ${questions.length}`} />
         </div>
-        <Timer seconds={SECTION_TIME[section] ?? 1200} onExpire={handleExpire} />
+        <Timer seconds={timeLimit} onExpire={handleExpire} />
       </div>
 
-      {/* Question */}
       <QuestionCard question={currentQuestion} index={currentIndex} total={questions.length} />
 
-      {/* Answer area */}
       {isWriting ? (
         <Card className="flex flex-col gap-4">
           <p className="chip" style={{ boxShadow: "none", paddingLeft: 0, background: "transparent" }}>
@@ -183,9 +188,7 @@ export default function QuizPage() {
             </p>
           )}
           {currentQuestion.options?.map((opt) => {
-            const isSelected = isMulti
-              ? multiSelected.includes(opt)
-              : selected === opt;
+            const isSelected = isMulti ? multiSelected.includes(opt) : selected === opt;
             return (
               <AnswerOption
                 key={opt}
@@ -198,7 +201,6 @@ export default function QuizPage() {
         </div>
       )}
 
-      {/* Navigation */}
       <div className="flex justify-between items-center">
         <Button
           variant="ghost"
@@ -227,5 +229,24 @@ export default function QuizPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function QuizPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const section = params.section as string;
+  const testId = searchParams.get("test");
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]" style={{ color: "var(--muted)" }}>
+          Loading…
+        </div>
+      }
+    >
+      <QuizContent key={`${section}-${testId ?? "all"}`} section={section} testId={testId} />
+    </Suspense>
   );
 }

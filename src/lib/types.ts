@@ -19,6 +19,18 @@ export interface Question {
   options?: string[];
   correctAnswer?: string | string[];
   explanation: string;
+  difficulty?: "easy" | "medium" | "hard";
+  tags?: string[];
+}
+
+export interface TestDefinition {
+  id: string;
+  title: string;
+  description: string;
+  section: Section;
+  questionCount: number;
+  timeLimit: number;
+  questionIds: string[];
 }
 
 export interface Answer {

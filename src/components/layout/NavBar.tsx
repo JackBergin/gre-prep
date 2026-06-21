@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/practice", label: "Practice" },
+  { href: "/practice", label: "Test Gallery" },
 ];
 
 export default function NavBar() {

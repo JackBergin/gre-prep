@@ -1,0 +1,141 @@
+.logo {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  color: inherit;
+}
+
+.logo-check {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.logo-check--center {
+  stroke-width: 2.4;
+}
+
+.logo-spokes {
+  transform-origin: 20px 20px;
+  animation: logo-wheel-fold 5s cubic-bezier(0.42, 0, 0.2, 1) infinite;
+}
+
+.logo-spoke {
+  transform-origin: 20px 20px;
+  animation: logo-spoke-fold 5s cubic-bezier(0.42, 0, 0.2, 1) infinite;
+  animation-delay: calc(var(--spoke-index) * 0.04s);
+}
+
+@keyframes logo-wheel-fold {
+  0%,
+  18% {
+    transform: scale(1);
+  }
+
+  38% {
+    transform: scale(0.92);
+  }
+
+  48%,
+  62% {
+    transform: scale(1);
+  }
+
+  78% {
+    transform: scale(0.92);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes logo-spoke-fold {
+  0%,
+  14% {
+    transform: rotate(var(--spoke-angle)) translateY(-12px)
+      rotate(calc(-1 * var(--spoke-angle))) scale(1);
+    opacity: 0.9;
+  }
+
+  32% {
+    transform: rotate(var(--spoke-angle)) translateY(-6px)
+      rotate(calc(-1 * var(--spoke-angle))) scale(0.72);
+    opacity: 0.75;
+  }
+
+  44% {
+    transform: rotate(var(--spoke-angle)) translateY(0)
+      rotate(calc(-1 * var(--spoke-angle))) scale(0.18);
+    opacity: 0;
+  }
+
+  48%,
+  58% {
+    transform: rotate(var(--spoke-angle)) translateY(0)
+      rotate(calc(-1 * var(--spoke-angle))) scale(0.18);
+    opacity: 0;
+  }
+
+  72% {
+    transform: rotate(var(--spoke-angle)) translateY(-6px)
+      rotate(calc(-1 * var(--spoke-angle))) scale(0.72);
+    opacity: 0.75;
+  }
+
+  86%,
+  100% {
+    transform: rotate(var(--spoke-angle)) translateY(-12px)
+      rotate(calc(-1 * var(--spoke-angle))) scale(1);
+    opacity: 0.9;
+  }
+}
+
+.logo-center {
+  transform-origin: 20px 20px;
+  animation: logo-center-emerge 5s cubic-bezier(0.42, 0, 0.2, 1) infinite;
+}
+
+@keyframes logo-center-emerge {
+  0%,
+  36% {
+    opacity: 0;
+    transform: scale(0.45) rotate(-8deg);
+  }
+
+  44% {
+    opacity: 0.35;
+    transform: scale(0.78) rotate(-3deg);
+  }
+
+  50%,
+  60% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  68% {
+    opacity: 0.35;
+    transform: scale(0.78) rotate(3deg);
+  }
+
+  76%,
+  100% {
+    opacity: 0;
+    transform: scale(0.45) rotate(8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-spokes {
+    display: none;
+  }
+
+  .logo-center {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

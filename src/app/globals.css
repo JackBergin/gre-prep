@@ -20,6 +20,50 @@
   --raise:  8px 8px 16px var(--dark), -8px -8px 16px var(--light);
   --press:  inset 5px 5px 10px var(--dark), inset -5px -5px 10px var(--light);
   --font:   "Poppins", system-ui, sans-serif;
+
+  /* Art tokens */
+  --art-opacity: 0.55;
+  --art-particle-alpha: 0.35;
+  --art-thumbnail-opacity: 0.85;
+  --art-blend-mode: multiply;
+  --hero-fallback-gradient: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 12%, var(--bg)),
+    var(--bg) 55%,
+    color-mix(in srgb, var(--accent) 8%, var(--bg))
+  );
+
+  /* Glass tokens */
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-blur: 16px;
+  --glass-shadow: 0 8px 32px rgba(65, 72, 90, 0.08);
+}
+
+[data-theme="dark"] {
+  --bg:     #1A1D24;
+  --ink:    #E8EAED;
+  --muted:  #9CA3AF;
+  --light:  #2A2F3A;
+  --dark:   #0F1117;
+  --accent: #7B93FF;
+  --raise:  8px 8px 16px var(--dark), -8px -8px 16px var(--light);
+  --press:  inset 5px 5px 10px var(--dark), inset -5px -5px 10px var(--light);
+
+  --art-opacity: 0.65;
+  --art-particle-alpha: 0.4;
+  --art-thumbnail-opacity: 0.9;
+  --art-blend-mode: screen;
+  --hero-fallback-gradient: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 18%, var(--bg)),
+    var(--bg) 50%,
+    color-mix(in srgb, var(--accent) 10%, var(--bg))
+  );
+
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 * {
@@ -159,3 +203,12 @@ body {
 h1 { font-size: 46px; font-weight: 700; line-height: 1.15; }
 h2 { font-size: 30px; font-weight: 700; line-height: 1.2; }
 h3 { font-size: 20px; font-weight: 600; }
+
+.theme-toggle {
+  min-width: 44px;
+  justify-content: center;
+  cursor: pointer;
+  border: 0;
+  font-size: 16px;
+  line-height: 1;
+}
