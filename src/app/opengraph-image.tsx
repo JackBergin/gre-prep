@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { site } from "@/lib/site";
 
 // Static social card; safe to render at build time.
+export const dynamic = "force-static";
 export const alt = `${site.name} — Free GRE Practice`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

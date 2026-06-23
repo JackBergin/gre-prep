@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
@@ -7,7 +7,7 @@ import SectionHeader from "@/components/sections/SectionHeader";
 import { Section, TestDefinition } from "@/lib/types";
 import { sections } from "@/lib/sections";
 import { sectionRayVar } from "@/lib/sections";
-import { formatTime, getTotalQuestionCount, sectionMeta } from "@/lib/tests";
+import { formatTime, getTestsBySection, getTotalQuestionCount, sectionMeta } from "@/lib/tests";
 import { getQuestionCountBySection } from "@/lib/questions";
 
 type SectionFilter = Section | "all";
@@ -45,36 +45,18 @@ function sortTests(list: TestDefinition[], sort: SortKey): TestDefinition[] {
   }
 }
 
+// Test definitions are static local data, so they can be derived directly
+// without a network round-trip — this keeps the page fully static.
+const testsBySection: Record<Section, TestDefinition[]> = {
+  verbal: getTestsBySection("verbal"),
+  quantitative: getTestsBySection("quantitative"),
+  writing: getTestsBySection("writing"),
+};
+
 export default function PracticePage() {
-  const [testsBySection, setTestsBySection] = useState<Record<Section, TestDefinition[]>>({
-    verbal: [],
-    quantitative: [],
-    writing: [],
-  });
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [activeSection, setActiveSection] = useState<SectionFilter>("all");
   const [sort, setSort] = useState<SortKey>("featured");
-
-  useEffect(() => {
-    Promise.all(
-      sections.map((section) =>
-        fetch(`/api/tests?section=${section}`)
-          .then((r) => r.json())
-          .then((data: TestDefinition[]) => ({ section, data }))
-      )
-    ).then((results) => {
-      const next = { verbal: [], quantitative: [], writing: [] } as Record<
-        Section,
-        TestDefinition[]
-      >;
-      for (const { section, data } of results) {
-        next[section] = data;
-      }
-      setTestsBySection(next);
-      setLoading(false);
-    });
-  }, []);
 
   const counts = getQuestionCountBySection();
   const totalQuestions = getTotalQuestionCount();
@@ -117,13 +99,7 @@ export default function PracticePage() {
         </p>
       </header>
 
-      {loading ? (
-        <Card className="text-center py-10" style={{ color: "var(--muted)" }}>
-          Loading tests…
-        </Card>
-      ) : (
-        <>
-          <Card className="toolbar">
+      <Card className="toolbar">
             <div className="search-field">
               <span className="search-field__icon" aria-hidden="true">
                 ⌕
@@ -213,8 +189,6 @@ export default function PracticePage() {
               })}
             </div>
           )}
-        </>
-      )}
     </div>
   );
 }

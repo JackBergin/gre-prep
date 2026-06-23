@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl } from "@/lib/site";
 
+// Emit as a static file for `output: "export"`.
+export const dynamic = "force-static";
+
 /**
  * XML sitemap served at /sitemap.xml. Lists the public, indexable documents.
  * Section views live under /practice#<section> fragments rather than distinct

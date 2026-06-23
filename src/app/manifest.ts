@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { brand } from "@/lib/brand";
 import { site } from "@/lib/site";
 
+// Emit as a static file for `output: "export"`.
+export const dynamic = "force-static";
+
 /**
  * Web app manifest served at /manifest.webmanifest. Makes PrismPrep
  * installable as a PWA and gives crawlers a clean app identity.

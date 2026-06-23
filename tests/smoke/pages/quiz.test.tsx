@@ -1,10 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { HttpResponse, http } from "msw";
-import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import QuizPage from "@/app/quiz/[section]/page";
-import { getTestsBySection } from "@/lib/tests";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { Question } from "@/lib/types";
 import {
   sampleMultiSelectQuestion,
   sampleVerbalQuestion,
@@ -12,11 +9,9 @@ import {
 } from "../../fixtures/questions";
 
 const mockPush = vi.fn();
-const mockUseParams = vi.fn(() => ({ section: "verbal" }));
 const mockUseSearchParams = vi.fn(() => new URLSearchParams());
 
 vi.mock("next/navigation", () => ({
-  useParams: (...args: unknown[]) => mockUseParams(...args),
   useSearchParams: (...args: unknown[]) => mockUseSearchParams(...args),
   useRouter: vi.fn(() => ({
     push: mockPush,
@@ -27,7 +22,32 @@ vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/quiz/verbal"),
 }));
 
-const mockQuestions = [
+// Questions are served from the static local bank; control what each loader
+// returns so the smoke tests can exercise specific scenarios.
+let currentQuestions: Question[] = [];
+const getQuestionsForTestSpy = vi.fn<(testId: string) => Question[]>(() => currentQuestions);
+
+vi.mock("@/lib/questions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/questions")>();
+  return {
+    ...actual,
+    getQuestionsBySection: () => currentQuestions,
+    getQuestionsByIds: (ids: string[]) =>
+      currentQuestions.filter((q) => ids.includes(q.id)),
+  };
+});
+
+vi.mock("@/lib/tests", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/tests")>();
+  return {
+    ...actual,
+    getQuestionsForTest: (testId: string) => getQuestionsForTestSpy(testId),
+  };
+});
+
+import QuizClient from "@/app/quiz/[section]/QuizClient";
+
+const mockQuestions: Question[] = [
   sampleVerbalQuestion,
   {
     ...sampleMultiSelectQuestion,
@@ -35,44 +55,19 @@ const mockQuestions = [
   },
 ];
 
-const server = setupServer(
-  http.get("/api/questions", ({ request }) => {
-    const url = new URL(request.url);
-    if (url.searchParams.get("section") === "verbal") {
-      return HttpResponse.json(mockQuestions);
-    }
-    return HttpResponse.json([]);
-  }),
-  http.post("/api/score", async ({ request }) => {
-    const body = await request.json();
-    return HttpResponse.json({
-      section: body.section,
-      totalQuestions: mockQuestions.length,
-      correctCount: 1,
-      incorrectCount: 1,
-      skippedCount: 0,
-      scaledScore: 150,
-      results: [],
-    });
-  })
-);
-
 describe("Quiz page smoke", () => {
-  beforeAll(() => server.listen());
   afterEach(() => {
-    server.resetHandlers();
     mockPush.mockClear();
-    mockUseParams.mockReturnValue({ section: "verbal" });
+    getQuestionsForTestSpy.mockClear();
     mockUseSearchParams.mockReturnValue(new URLSearchParams());
+    currentQuestions = [];
     sessionStorage.clear();
   });
-  afterAll(() => server.close());
 
   it("loads questions and advances through the quiz", async () => {
+    currentQuestions = mockQuestions;
     const user = userEvent.setup();
-    render(<QuizPage />);
-
-    expect(screen.getByText(/Loading questions/i)).toBeInTheDocument();
+    render(<QuizClient section="verbal" />);
 
     await waitFor(() => {
       expect(screen.getByText(sampleVerbalQuestion.prompt)).toBeInTheDocument();
@@ -86,12 +81,9 @@ describe("Quiz page smoke", () => {
   });
 
   it("submits quiz and navigates to results", async () => {
-    server.use(
-      http.get("/api/questions", () => HttpResponse.json([sampleVerbalQuestion]))
-    );
-
+    currentQuestions = [sampleVerbalQuestion];
     const user = userEvent.setup();
-    render(<QuizPage />);
+    render(<QuizClient section="verbal" />);
 
     await waitFor(() => {
       expect(screen.getByText(sampleVerbalQuestion.prompt)).toBeInTheDocument();
@@ -102,15 +94,12 @@ describe("Quiz page smoke", () => {
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/results");
     });
-    expect(sessionStorage.getItem("quizResult")).toContain('"scaledScore":150');
+    expect(sessionStorage.getItem("quizResult")).toContain('"section":"verbal"');
   });
 
-  it("shows empty state when API returns no questions", async () => {
-    server.use(
-      http.get("/api/questions", () => HttpResponse.json([]))
-    );
-
-    render(<QuizPage />);
+  it("shows empty state when there are no questions", async () => {
+    currentQuestions = [];
+    render(<QuizClient section="verbal" />);
 
     await waitFor(() => {
       expect(screen.getByText(/No questions found/i)).toBeInTheDocument();
@@ -118,19 +107,9 @@ describe("Quiz page smoke", () => {
   });
 
   it("loads writing prompts with a response textarea and word count", async () => {
-    mockUseParams.mockReturnValue({ section: "writing" });
-    server.use(
-      http.get("/api/questions", ({ request }) => {
-        const url = new URL(request.url);
-        if (url.searchParams.get("section") === "writing") {
-          return HttpResponse.json([sampleWritingQuestion]);
-        }
-        return HttpResponse.json([]);
-      })
-    );
-
+    currentQuestions = [sampleWritingQuestion];
     const user = userEvent.setup();
-    render(<QuizPage />);
+    render(<QuizClient section="writing" />);
 
     await waitFor(() => {
       expect(screen.getByText(sampleWritingQuestion.prompt)).toBeInTheDocument();
@@ -143,8 +122,9 @@ describe("Quiz page smoke", () => {
   });
 
   it("navigates back to the previous question and restores answers", async () => {
+    currentQuestions = mockQuestions;
     const user = userEvent.setup();
-    render(<QuizPage />);
+    render(<QuizClient section="verbal" />);
 
     await waitFor(() => {
       expect(screen.getByText(sampleVerbalQuestion.prompt)).toBeInTheDocument();
@@ -165,23 +145,15 @@ describe("Quiz page smoke", () => {
     ).toHaveClass("answer-option--selected");
   });
 
-  it("fetches questions by test id when provided in search params", async () => {
-    const writingTest = getTestsBySection("writing")[0];
-    mockUseParams.mockReturnValue({ section: "writing" });
-    mockUseSearchParams.mockReturnValue(new URLSearchParams(`test=${writingTest.id}`));
+  it("loads questions by test id when provided in search params", async () => {
+    currentQuestions = [sampleWritingQuestion];
+    mockUseSearchParams.mockReturnValue(new URLSearchParams("test=writing-practice-1"));
 
-    server.use(
-      http.get("/api/questions", ({ request }) => {
-        const url = new URL(request.url);
-        expect(url.searchParams.get("test")).toBe(writingTest.id);
-        return HttpResponse.json([sampleWritingQuestion]);
-      })
-    );
-
-    render(<QuizPage />);
+    render(<QuizClient section="writing" />);
 
     await waitFor(() => {
-      expect(screen.getByText(writingTest.title)).toBeInTheDocument();
+      expect(screen.getByText(sampleWritingQuestion.prompt)).toBeInTheDocument();
     });
+    expect(getQuestionsForTestSpy).toHaveBeenCalledWith("writing-practice-1");
   });
 });
