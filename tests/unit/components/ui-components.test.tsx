@@ -1,22 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import GlassCard from "@/components/ui/GlassCard";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Chip from "@/components/ui/Chip";
-
-describe("GlassCard", () => {
-  it("renders card and panel variants", () => {
-    const { rerender } = render(<GlassCard>Card content</GlassCard>);
-    expect(screen.getByText("Card content")).toHaveClass("glass-card");
-
-    rerender(
-      <GlassCard variant="panel" data-testid="panel">
-        Panel content
-      </GlassCard>
-    );
-    expect(screen.getByTestId("panel")).toHaveClass("glass-panel");
-  });
-});
 
 describe("ProgressBar", () => {
   it("renders label and clamps fill width", () => {

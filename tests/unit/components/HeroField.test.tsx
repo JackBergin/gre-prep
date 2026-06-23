@@ -35,7 +35,7 @@ describe("HeroField", () => {
     render(<HeroField />);
 
     expect(screen.getByTestId("art-canvas")).toBeInTheDocument();
-    expect(document.querySelector(".hero-field--prism")).toBeInTheDocument();
+    expect(document.querySelector(".hero-field")).toBeInTheDocument();
   });
 
   it("renders static placeholder when reduced motion is preferred", () => {

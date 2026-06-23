@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SectionThumbnail from "@/components/art/SectionThumbnail";
-import GlassCard from "@/components/ui/GlassCard";
+import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import { sectionRayVar } from "@/lib/sections";
 import { sectionMeta } from "@/lib/tests";
@@ -24,8 +24,8 @@ export default function SectionOverviewCard({
   const meta = sectionMeta[section];
 
   return (
-    <GlassCard
-      className="flex flex-col gap-4 p-6"
+    <Card
+      className="flex flex-col gap-4"
       style={{ "--section-ray": sectionRayVar[section] } as React.CSSProperties}
     >
       <SectionThumbnail section={section} />
@@ -42,6 +42,6 @@ export default function SectionOverviewCard({
       <Link href={href} className="btn btn--ghost" style={{ justifyContent: "center" }}>
         {linkLabel}
       </Link>
-    </GlassCard>
+    </Card>
   );
 }

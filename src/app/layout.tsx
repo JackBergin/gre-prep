@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 import "../styles/art.css";
-import "../styles/glass.css";
 import "../styles/logo.css";
 import Header from "@/components/layout/Header";
 import JsonLd from "@/components/seo/JsonLd";

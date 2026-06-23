@@ -81,8 +81,8 @@
   border-radius: 16px;
   overflow: hidden;
   flex-shrink: 0;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: var(--bg);
+  box-shadow: var(--press);
 }
 
 .section-thumbnail .art-canvas {
@@ -176,29 +176,15 @@
   overflow: hidden;
 }
 
+/* The hero is now just a positioning wrapper — the slime backdrop lives
+   inside the card itself (see .hero-field), so the section no longer needs
+   its own height, clipping, or centering. */
 .hero-section {
   position: relative;
-  overflow: hidden;
-  border-radius: var(--radius);
-  min-height: 420px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .hero-section__content {
   position: relative;
   z-index: 1;
   width: 100%;
-  padding: 3rem 2rem;
-}
-
-@media (max-width: 768px) {
-  .hero-section {
-    min-height: 360px;
-  }
-
-  .hero-section__content {
-    padding: 2.5rem 1.5rem;
-  }
 }
