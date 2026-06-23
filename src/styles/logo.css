@@ -8,21 +8,10 @@
   --logo-color: #ffffff;
 }
 
-.logo__box,
-.logo__triangle {
+.logo__blade {
   stroke: var(--logo-color);
   fill: none;
-}
-
-.logo__box {
-  stroke-width: 2;
-}
-
-.logo__triangle {
-  stroke-width: 2;
-}
-
-.logo__dot {
-  fill: var(--logo-color);
-  stroke: none;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }

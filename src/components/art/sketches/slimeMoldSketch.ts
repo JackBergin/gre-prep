@@ -73,8 +73,10 @@ export function createSlimeMoldSketch(
       const [qr, qg, qb] = theme.rayQuantRgb;
       const [wr, wg, wb] = theme.rayWritingRgb;
 
-      // Fading background — produces thin persistent trails
-      p.background(br, bg, bb, 12);
+      // Fading background — produces thin persistent trails.
+      // A lower alpha means deposits clear more slowly, so the trail
+      // network accumulates and becomes visible much sooner.
+      p.background(br, bg, bb, 7);
       p.loadPixels();
 
       const pw = d * p.width;

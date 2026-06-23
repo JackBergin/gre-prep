@@ -11,7 +11,7 @@ const BALANCED = {
   thumbSpeed: 0.22,
   maxDpr: 2,
   slimeMoldAgents: { desktop: 3000, mobile: 1200 },
-  slimeMoldSpeed: 1.0,
+  slimeMoldSpeed: 1.6,
 };
 
 const INTENSITY_MAP = {

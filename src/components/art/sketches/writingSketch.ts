@@ -2,47 +2,69 @@ import type p5 from "p5";
 import { readArtTheme } from "@/lib/art/theme";
 import type { SectionSketchOptions } from "./types";
 
-const WAVE_COUNT = 3;
-const WAVE_TOP = 13;
-const WAVE_GAP = 11;
-const AMPLITUDE = 2.6;
-const FREQUENCY = 0.26;
+interface Particle {
+  x: number;
+  baseY: number;
+  size: number;
+  speed: number;
+  phase: number;
+}
+
+// Particles drift left-to-right along a few baselines, evoking lines of
+// writing while matching the particle aesthetic of the other thumbnails.
+const LINE_COUNT = 3;
+const LINE_TOP = 13;
+const LINE_GAP = 11;
+const LEFT = 5;
+const RIGHT = 43;
 
 export function createWritingSketch(options: SectionSketchOptions): (p: p5) => void {
+  let particles: Particle[] = [];
   let theme = readArtTheme();
-  let phase = 0;
 
   return (p: p5) => {
+    function spawn(line: number, scatter: boolean): Particle {
+      return {
+        x: scatter ? p.random(LEFT, RIGHT) : LEFT,
+        baseY: LINE_TOP + line * LINE_GAP,
+        size: p.random(1.3, 2.3),
+        speed: options.speed * p.random(1.1, 1.8),
+        phase: p.random(p.TWO_PI),
+      };
+    }
+
     p.setup = () => {
       p.createCanvas(48, 48);
+      particles = Array.from({ length: options.particleCount }, (_, i) =>
+        spawn(i % LINE_COUNT, true)
+      );
     };
 
     p.draw = () => {
       theme = readArtTheme();
-      const [r, g, b] = theme.accentRgb;
+      const [r, g, b] = theme.rayWritingRgb;
       p.background(p.color(theme.bg));
+      p.noStroke();
 
-      phase += options.speed * 0.18;
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
+        particle.x += particle.speed;
+        particle.phase += 0.08;
 
-      const left = 5;
-      const right = 43;
-
-      p.noFill();
-      p.strokeWeight(1.4);
-      p.strokeJoin(p.ROUND);
-      p.strokeCap(p.ROUND);
-
-      for (let wave = 0; wave < WAVE_COUNT; wave++) {
-        const baseY = WAVE_TOP + wave * WAVE_GAP;
-        // A small per-wave phase offset gives a gentle travelling cadence.
-        const wavePhase = phase - wave * 0.9;
-        p.stroke(r, g, b, theme.particleAlpha * 235);
-        p.beginShape();
-        for (let x = left; x <= right; x += 1) {
-          const y = baseY + p.sin(x * FREQUENCY + wavePhase) * AMPLITUDE;
-          p.vertex(x, y);
+        if (particle.x > RIGHT) {
+          Object.assign(particle, spawn(i % LINE_COUNT, false));
         }
-        p.endShape();
+
+        const y = particle.baseY + p.sin(particle.phase) * 1.6;
+        // Fade in from the left and out toward the right edge for a gentle,
+        // travelling cadence.
+        const edge = p.constrain(
+          Math.min(particle.x - LEFT, RIGHT - particle.x) / 6,
+          0,
+          1
+        );
+        p.fill(r, g, b, theme.particleAlpha * 235 * edge);
+        p.circle(particle.x, y, particle.size);
       }
     };
   };

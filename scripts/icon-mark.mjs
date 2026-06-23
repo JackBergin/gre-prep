@@ -3,26 +3,28 @@
 export const ICON_MARK_LIGHT = "#424858";
 export const ICON_MARK_DARK = "#FFFFFF";
 
+/**
+ * PrismPrep mark: three checkmarks arranged with 120° rotational symmetry
+ * to form a pinwheel — nodding to the three prep paths (Verbal, Quant,
+ * Writing) and a prism's three-fold refraction, while the checks read as
+ * "test prep". Monochrome, drawn entirely with round-capped strokes.
+ */
+const CHECK = "M 12.3 9.0 L 15 11.9 L 20.9 4.6";
+
 const MARK_PATHS = `
-  <rect class="logo-mark logo-box" x="3" y="3" width="26" height="26" rx="6" />
-  <path class="logo-mark logo-triangle" d="M16 9 L9.5 22.5 L22.5 22.5 Z" />
-  <circle class="logo-mark logo-dot" cx="16" cy="18" r="1.9" />
+  <g class="logo-mark logo-pinwheel">
+    <path class="logo-blade" d="${CHECK}" />
+    <path class="logo-blade" d="${CHECK}" transform="rotate(120 16 16)" />
+    <path class="logo-blade" d="${CHECK}" transform="rotate(240 16 16)" />
+  </g>
 `;
 
 const BASE_STYLES = `
-  .logo-box {
+  .logo-blade {
     fill: none;
-    stroke-width: 2;
-  }
-
-  .logo-triangle {
-    fill: none;
-    stroke-width: 2;
+    stroke-width: 2.4;
+    stroke-linecap: round;
     stroke-linejoin: round;
-  }
-
-  .logo-dot {
-    stroke: none;
   }
 `;
 

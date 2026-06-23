@@ -113,6 +113,10 @@ body {
   text-decoration: none;
 }
 
+.btn:hover {
+  box-shadow: 10px 10px 20px var(--dark), -10px -10px 20px var(--light);
+}
+
 .btn:active {
   box-shadow: var(--press);
 }
@@ -120,11 +124,25 @@ body {
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: var(--raise);
 }
 
 .btn--ghost {
   background: var(--bg);
   color: var(--ink);
+}
+
+/* Accent buttons drop the colored highlight on hover (keep accessible focus). */
+.btn:focus-visible,
+.chip:focus-visible,
+.answer-option:focus-visible,
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.input:focus {
+  box-shadow: var(--press), 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .chip {

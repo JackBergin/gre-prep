@@ -3,7 +3,9 @@ interface LogoProps {
   size?: number;
 }
 
-/** PrismPrep mark: transparent canvas, themed box/triangle/dot. Matches public/icon.svg. */
+const CHECK = "M 12.3 9.0 L 15 11.9 L 20.9 4.6";
+
+/** PrismPrep mark: three checkmarks in a pinwheel. Matches public/icon.svg. */
 export default function Logo({ className = "", size = 40 }: LogoProps) {
   return (
     <svg
@@ -15,14 +17,9 @@ export default function Logo({ className = "", size = 40 }: LogoProps) {
       className={`logo ${className}`.trim()}
       aria-hidden="true"
     >
-      <rect className="logo__box" x="3" y="3" width="26" height="26" rx="6" />
-      <path
-        className="logo__triangle"
-        d="M16 9 L9.5 22.5 L22.5 22.5 Z"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <circle className="logo__dot" cx="16" cy="18" r="1.9" />
+      <path className="logo__blade" d={CHECK} />
+      <path className="logo__blade" d={CHECK} transform="rotate(120 16 16)" />
+      <path className="logo__blade" d={CHECK} transform="rotate(240 16 16)" />
     </svg>
   );
 }

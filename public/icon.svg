@@ -5,19 +5,11 @@
       fill: #424858;
     }
     
-  .logo-box {
+  .logo-blade {
     fill: none;
-    stroke-width: 2;
-  }
-
-  .logo-triangle {
-    fill: none;
-    stroke-width: 2;
+    stroke-width: 2.4;
+    stroke-linecap: round;
     stroke-linejoin: round;
-  }
-
-  .logo-dot {
-    stroke: none;
   }
 
     @media (prefers-color-scheme: dark) {
@@ -28,8 +20,10 @@
     }
   </style>
   
-  <rect class="logo-mark logo-box" x="3" y="3" width="26" height="26" rx="6" />
-  <path class="logo-mark logo-triangle" d="M16 9 L9.5 22.5 L22.5 22.5 Z" />
-  <circle class="logo-mark logo-dot" cx="16" cy="18" r="1.9" />
+  <g class="logo-mark logo-pinwheel">
+    <path class="logo-blade" d="M 12.3 9.0 L 15 11.9 L 20.9 4.6" />
+    <path class="logo-blade" d="M 12.3 9.0 L 15 11.9 L 20.9 4.6" transform="rotate(120 16 16)" />
+    <path class="logo-blade" d="M 12.3 9.0 L 15 11.9 L 20.9 4.6" transform="rotate(240 16 16)" />
+  </g>
 
 </svg>

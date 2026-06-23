@@ -20,11 +20,27 @@
   pointer-events: none;
   border-radius: inherit;
   overflow: hidden;
+  /* Keep the animation discrete: dim it and fade it away from the
+     center where the headline and copy sit, leaving only a subtle
+     presence near the panel edges. */
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(
+    ellipse 68% 72% at 50% 50%,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 68% 72% at 50% 50%,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 1) 100%
+  );
 }
 
 .hero-field--static {
   background: var(--hero-fallback-gradient);
-  opacity: 1;
+  opacity: 0.55;
   clip-path: polygon(18% 8%, 82% 8%, 92% 92%, 8% 92%);
 }
 
