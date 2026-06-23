@@ -2,7 +2,6 @@ import Link from "next/link";
 import HomeHero from "@/components/home/HomeHero";
 import SectionOverviewCard from "@/components/sections/SectionOverviewCard";
 import Card from "@/components/ui/Card";
-import Chip from "@/components/ui/Chip";
 import JsonLd from "@/components/seo/JsonLd";
 import { getQuestionCountBySection } from "@/lib/questions";
 import { sections } from "@/lib/sections";

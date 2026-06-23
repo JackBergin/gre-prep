@@ -44,3 +44,19 @@ export const site = {
 export function absoluteUrl(path = ""): string {
   return new URL(path, site.url).toString();
 }
+
+/**
+ * Deployment base path (e.g. "/gre-prep" on GitHub Pages, "" locally).
+ * Mirrors `basePath`/`assetPrefix` in next.config.ts.
+ */
+export const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+/**
+ * Prefix a root-relative public asset path with the deployment base path so
+ * it resolves correctly when the site is served from a subpath. Next.js does
+ * not auto-prefix string asset URLs in metadata/manifest, so do it explicitly.
+ */
+export function withBasePath(path: string): string {
+  if (!path.startsWith("/")) return path;
+  return `${basePath}${path}`;
+}

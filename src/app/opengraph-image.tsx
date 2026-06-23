@@ -76,7 +76,6 @@ export default function OpengraphImage() {
             300 timed questions, instant scoring, no account.
           </div>
         </div>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={prismDataUri} width={340} height={340} alt="" />
       </div>
     ),

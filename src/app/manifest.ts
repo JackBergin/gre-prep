@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { brand } from "@/lib/brand";
-import { site } from "@/lib/site";
+import { site, withBasePath } from "@/lib/site";
 
 // Emit as a static file for `output: "export"`.
 export const dynamic = "force-static";
@@ -14,38 +14,38 @@ export default function manifest(): MetadataRoute.Manifest {
     name: `${site.name} — Free GRE Practice`,
     short_name: site.name,
     description: site.shortDescription,
-    start_url: "/",
+    start_url: withBasePath("/"),
     display: "standalone",
     background_color: brand.bgLight,
     theme_color: brand.bgLight,
     categories: ["education", "productivity"],
     icons: [
       {
-        src: "/icon-light.svg",
+        src: withBasePath("/icon-light.svg"),
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
       },
       {
-        src: "/icon-dark.svg",
+        src: withBasePath("/icon-dark.svg"),
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
       },
       {
-        src: "/icon.svg",
+        src: withBasePath("/icon.svg"),
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
       },
       {
-        src: "/apple-icon-light.png",
+        src: withBasePath("/apple-icon-light.png"),
         sizes: "180x180",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/apple-icon-dark.png",
+        src: withBasePath("/apple-icon-dark.png"),
         sizes: "180x180",
         type: "image/png",
         purpose: "any",

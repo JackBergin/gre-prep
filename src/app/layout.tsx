@@ -6,7 +6,7 @@ import "../styles/logo.css";
 import Header from "@/components/layout/Header";
 import JsonLd from "@/components/seo/JsonLd";
 import { brand } from "@/lib/brand";
-import { site } from "@/lib/site";
+import { site, withBasePath } from "@/lib/site";
 import {
   organizationSchema,
   websiteSchema,
@@ -31,39 +31,39 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/icon-light.svg",
+        url: withBasePath("/icon-light.svg"),
         type: "image/svg+xml",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark.svg",
+        url: withBasePath("/icon-dark.svg"),
         type: "image/svg+xml",
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: "/icon-light.png",
+        url: withBasePath("/icon-light.png"),
         type: "image/png",
         sizes: "32x32",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark.png",
+        url: withBasePath("/icon-dark.png"),
         type: "image/png",
         sizes: "32x32",
         media: "(prefers-color-scheme: dark)",
       },
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" },
+      { url: withBasePath("/icon.svg"), type: "image/svg+xml" },
+      { url: withBasePath("/favicon.ico"), sizes: "any" },
     ],
     apple: [
       {
-        url: "/apple-icon-light.png",
+        url: withBasePath("/apple-icon-light.png"),
         sizes: "180x180",
         type: "image/png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/apple-icon-dark.png",
+        url: withBasePath("/apple-icon-dark.png"),
         sizes: "180x180",
         type: "image/png",
         media: "(prefers-color-scheme: dark)",

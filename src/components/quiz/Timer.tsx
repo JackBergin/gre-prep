@@ -15,10 +15,14 @@ function fmt(s: number) {
 
 export default function Timer({ seconds, onExpire }: TimerProps) {
   const [remaining, setRemaining] = useState(seconds);
+  const [prevSeconds, setPrevSeconds] = useState(seconds);
 
-  useEffect(() => {
+  // Reset the countdown when the configured duration changes. Adjusting state
+  // during render (React's recommended pattern) avoids an extra effect pass.
+  if (seconds !== prevSeconds) {
+    setPrevSeconds(seconds);
     setRemaining(seconds);
-  }, [seconds]);
+  }
 
   useEffect(() => {
     if (remaining <= 0) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { sectionRayVar } from "@/lib/sections";
 import type { Section } from "@/lib/types";
 import ArtCanvas from "./ArtCanvas";
@@ -26,31 +26,29 @@ const sectionSketchFactory = {
   writing: createWritingSketch,
 } as const;
 
+// Stable external-store adapters: browser environment reads are exposed as
+// snapshots so React can subscribe without setting state inside an effect.
+const subscribeMotion = (cb: () => void) => subscribeReducedMotion(() => cb());
+const subscribeVisible = (cb: () => void) => subscribeVisibility(() => cb());
+const subscribeViewport = (cb: () => void) => {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("resize", cb);
+  return () => window.removeEventListener("resize", cb);
+};
+const getVisibilitySnapshot = () =>
+  typeof document === "undefined" ? true : document.visibilityState === "visible";
+
 export default function SectionThumbnail({ section }: SectionThumbnailProps) {
-  // SSR-safe defaults so the first client render matches the server; read real
-  // environment after mount to avoid hydration drift.
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const [mobile, setMobile] = useState(false);
+  // External-store snapshots keep the first client render matching the server
+  // (SSR-safe defaults) while staying reactive without a set-state effect.
+  const reducedMotion = useSyncExternalStore(subscribeMotion, prefersReducedMotion, () => false);
+  const visible = useSyncExternalStore(subscribeVisible, getVisibilitySnapshot, () => true);
+  const mobile = useSyncExternalStore(subscribeViewport, isMobileViewport, () => false);
   const [themeKey, setThemeKey] = useState(0);
 
+  // Remount the canvas when the theme changes so the sketch re-reads colors.
   useEffect(() => {
-    setReducedMotion(prefersReducedMotion());
-    setMobile(isMobileViewport());
-
-    const cleanups = [
-      subscribeReducedMotion(setReducedMotion),
-      subscribeVisibility(setVisible),
-      subscribeTheme(() => setThemeKey((k) => k + 1)),
-    ];
-
-    const onResize = () => setMobile(isMobileViewport());
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      cleanups.forEach((fn) => fn());
-      window.removeEventListener("resize", onResize);
-    };
+    return subscribeTheme(() => setThemeKey((k) => k + 1));
   }, []);
 
   const config = useMemo(() => getArtConfig(mobile), [mobile]);

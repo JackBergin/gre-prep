@@ -80,7 +80,7 @@ export default function PracticePage() {
       result.push({ section, tests: sortTests(matched, sort) });
     }
     return result;
-  }, [visibleSections, testsBySection, query, sort]);
+  }, [visibleSections, query, sort]);
 
   const resultCount = filtered.reduce((sum, group) => sum + group.tests.length, 0);
 

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ScoreResult, QuestionResult } from "@/lib/types";
 import ScoreCard from "@/components/quiz/ScoreCard";
@@ -7,19 +7,23 @@ import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import AnswerOption from "@/components/quiz/AnswerOption";
 
-export default function ResultsPage() {
-  const [result, setResult] = useState<ScoreResult | null>(null);
+// The quiz result is a one-shot value handed off via sessionStorage, so model
+// it as an external store: this keeps the read out of an effect and stays
+// SSR-safe (the server snapshot is always null).
+const subscribeQuizResult = () => () => {};
+const readQuizResult = (): string | null =>
+  typeof sessionStorage === "undefined" ? null : sessionStorage.getItem("quizResult");
 
-  useEffect(() => {
-    const raw = sessionStorage.getItem("quizResult");
-    if (raw) {
-      try {
-        setResult(JSON.parse(raw));
-      } catch {
-        // ignore parse errors
-      }
+export default function ResultsPage() {
+  const raw = useSyncExternalStore(subscribeQuizResult, readQuizResult, () => null);
+  const result = useMemo<ScoreResult | null>(() => {
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as ScoreResult;
+    } catch {
+      return null;
     }
-  }, []);
+  }, [raw]);
 
   if (!result) {
     return (
